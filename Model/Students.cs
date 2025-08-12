@@ -1,10 +1,11 @@
 namespace cbtBackend.Model
 {
-    public class Student
+    public class Student : BaseEntity
     {
-        public string FirstName { get; set; }
-        public string LastName { get; set; }
-        public string SerialNumber { get; set; }
-
+        public string SerialNumber { get; set; } = default!;
+        public SubAdmin SubAdmin { get; set; } = default!;
+        public string SubAdminId { get; set; } = default!;
+        public ICollection<Subject> Subjects = [];
+        public ICollection<Result> Results = [];
     }
 }

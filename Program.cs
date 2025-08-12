@@ -1,10 +1,32 @@
+using cbtBackend.Context;
+using cbtBackend.Repositories.Implementations;
+using cbtBackend.Repositories.Interfaces;
+using cbtBackend.Services.Implementations;
+using cbtBackend.Services.Interfaces;
+using Microsoft.EntityFrameworkCore;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddDbContext<ApplicationContext>(opt =>
+   opt.UseMySQL(builder.Configuration.GetConnectionString("ConnectionString")!));
 
+builder.Services.AddCors(options =>
+    {
+        options.AddPolicy("AllowSpecificOrigin",
+            builder => builder.WithOrigins("http://127.0.0.1:5500")
+                              .AllowAnyHeader()
+                              .AllowAnyMethod());
+    });
+builder.Services.AddControllers();
+
+//Add Repositories
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+//Add Services
+builder.Services.AddScoped<ILoginService, LoginService>();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -35,6 +57,15 @@ app.MapGet("/weatherforecast", () =>
 })
 .WithName("GetWeatherForecast")
 .WithOpenApi();
+app.UseRouting();
+app.UseCors("AllowAllOrigins");
+app.UseAuthentication();
+app.UseAuthorization();
+app.UseHttpsRedirection();
+    app.UseEndpoints(endpoints =>
+    {
+        _ = endpoints.MapControllers();
+    });
 
 app.Run();
 
