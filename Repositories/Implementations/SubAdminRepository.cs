@@ -17,7 +17,6 @@ namespace cbtBackend.Repositories.Implementations
         public async Task<SubAdmin> Get(string id)
         {
             var subAdmin = await _context.Set<SubAdmin>()
-            .Include(a => a.Subjects)
             .Include(a => a.Students)
             .Include(a => a.User)
             .FirstOrDefaultAsync(a => a.Id == id);
@@ -27,7 +26,6 @@ namespace cbtBackend.Repositories.Implementations
         public async Task<SubAdmin> Get(Expression<Func<SubAdmin, bool>> expression)
         {
              var subAdmin = await _context.Set<SubAdmin>()
-            .Include(a => a.Subjects)
             .Include(a => a.Students)
             .Include(a => a.User)
             .FirstOrDefaultAsync(expression);
@@ -37,7 +35,6 @@ namespace cbtBackend.Repositories.Implementations
         public async Task<ICollection<SubAdmin>> GetAll()
         {
              var subAdmin = await _context.Set<SubAdmin>()
-            .Include(a => a.Subjects)
             .Include(a => a.Students)
             .Include(a => a.User)
             .ToListAsync();
