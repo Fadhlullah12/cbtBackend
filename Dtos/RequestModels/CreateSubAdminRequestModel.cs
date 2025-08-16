@@ -1,14 +1,10 @@
-namespace cbtBackend.Model
+namespace cbtBackend.Dtos.RequestModels
 {
-    public class User : BaseEntity
+    public class CreateSubAdminRequestModel
     {
         public string Email { get; set; } = default!;
         public string Password { get; set; } = default!;
         public string FirstName { get; set; } = default!;
         public string LastName { get; set; } = default!;
-        public string Role { get; set; } = default!;
-        public SubAdmin SubAdmin { get; set; } = default!;
-        public Student Student { get; set; } = default!;
-
     }
 }
