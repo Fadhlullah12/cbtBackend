@@ -27,7 +27,7 @@ namespace cbtBackend.Controllers
             var userCreds = await _loginService.LoginAsync(model);
             if (userCreds.Status == false)
             {
-                return Ok(new { Token = "", User = userCreds });
+                return Unauthorized();
             }
             var claims = new List<Claim>
             {
@@ -35,7 +35,7 @@ namespace cbtBackend.Controllers
                 new Claim(ClaimTypes.Name, userCreds.Data.UserName)
             };
             string token = GenerateToken(claims);
-            return Ok(new { Token = token, User = userCreds });
+            return Ok(new { Token = token });
         }
        [HttpGet("Logout")]
         public async Task<IActionResult> Logout()

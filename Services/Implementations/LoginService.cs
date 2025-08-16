@@ -23,7 +23,7 @@ namespace cbtBackend.Services.Implementations
                     Status = false,
                 };
             }
-           
+          
             return new BaseResponse<LoginResponseModel>
             {
                 Message = "Login Successful",
