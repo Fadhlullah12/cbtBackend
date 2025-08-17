@@ -26,7 +26,7 @@ namespace cbtBackend.Services.Implementations
           
             return new BaseResponse<LoginResponseModel>
             {
-                Message = "Login Successful",
+                Message = "Login Successfl",
                 Status = true,
                 Data = new LoginResponseModel
                 {
