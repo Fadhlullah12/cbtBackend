@@ -31,7 +31,7 @@ namespace cbtBackend.Services.Implementations
                 Email = model.Email,
                 FirstName = model.FirstName,
                 LastName = model.LastName,
-                Password = model.Password,
+                Password = BCrypt.Net.BCrypt.HashPassword(model.Password),
                 Role = "SubAdmin",
             };
 
