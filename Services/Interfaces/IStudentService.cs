@@ -5,6 +5,7 @@ namespace cbtBackend.Services.Interfaces
 {
     public interface IStudentService
     {
-       Task<BaseResponse<CreateStudentResponseModel>> LoginAsync(CreateStudentRequestModel model);   
+        Task<BaseResponse<CreateStudentResponseModel>> RegisterStudent(CreateStudentRequestModel model);
+        Task<BaseResponse<CreateMultipleStudentResponseModel>> RegisterStudents(IEnumerable<CreateStudentRequestModel> models);
     }
 }

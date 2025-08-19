@@ -32,7 +32,8 @@ namespace cbtBackend.Controllers
             var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.Role, userCreds.Data!.Role),
-                new Claim(ClaimTypes.Name, userCreds.Data.UserName)
+                new Claim(ClaimTypes.Name, userCreds.Data.UserName),
+                new Claim(ClaimTypes.Email, userCreds.Data.Email)
             };
             string token = GenerateToken(claims);
             return Ok(new { Token = token });
@@ -42,6 +43,7 @@ namespace cbtBackend.Controllers
         {
             return Ok("Logout successful");
         }
+
         private string GenerateToken(IEnumerable<Claim> claims)
         {
             byte[] keyBytes = new byte[32]; // 256-bit key
