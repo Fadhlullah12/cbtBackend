@@ -8,6 +8,7 @@ namespace cbtBackend.Repositories.Interfaces
     {
         Task<Student> Get(string id);
         Task<Student> Get(Expression<Func<Student, bool>> expression);
-        Task<ICollection<Student>> GetAll();   
+        Task<ICollection<Student>> GetAll(string subAdminId);   
+        Task<ICollection<Student>> GetAll(Expression<Func<Student, bool>> expression);   
     }
 }
