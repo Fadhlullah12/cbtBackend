@@ -21,7 +21,7 @@ namespace cbtBackend.Controllers
             var response = await _subjectService.CreateSubjectAsync(model);
             if (response.Status == false)
             {
-                return BadRequest(response.Message);
+                return Conflict(response.Message);
             }
             return Ok(response);
         }
