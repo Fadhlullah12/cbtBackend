@@ -55,5 +55,26 @@ namespace cbtBackend.Controllers
             }
             return Ok(response);
         }
+         [HttpDelete("${Id}")]
+        public async Task<ActionResult<bool>> Delete(string Id)
+        {
+            var response = await _subjectService.Delete(Id);
+            if (response.Status == false)
+            {
+                return BadRequest();
+            }
+            return Ok(response);
+        }
+
+        [HttpPut]
+        public async Task<ActionResult<bool>> Update(UpdateSubjectRequestModel model)
+        {
+            var response = await _subjectService.Update(model);
+            if (response.Status == false)
+            {
+                return BadRequest();
+            }
+            return Ok(response);
+        }
     }
 }
