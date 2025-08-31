@@ -8,8 +8,6 @@ namespace cbtBackend.Repositories.Implementations
 {
     public class StudentRepository : BaseRepository<Student>, IStudentRepository
     {
-        ApplicationContext _context;
-
         public StudentRepository(ApplicationContext context)
         {
             _context = context;
@@ -19,22 +17,55 @@ namespace cbtBackend.Repositories.Implementations
         {
             var student = await _context.Set<Student>()
             .Include(a => a.SubAdmin)
-            .FirstOrDefaultAsync(a => a.Id == id);
+            .Include(a => a.User)
+            .Include(a => a.Results)
+            .Include(a => a.StudentExams)
+            .Include(a => a.StudentSubjects)
+            .ThenInclude(a => a.Subject)
+            .ThenInclude(a => a.Exams)
+            .FirstOrDefaultAsync(a => a.Id == id && a.IsDeleted == false);
             return student!;
         }
 
         public async Task<Student> Get(Expression<Func<Student, bool>> expression)
         {
              var student = await _context.Set<Student>()
-            .Include(a => a.SubAdmin)
+             .Include(a => a.SubAdmin)
+            .Include(a => a.User)
+            .Include(a => a.Results)
+            .Include(a => a.StudentExams)
+            .Include(a => a.StudentSubjects)
+            .ThenInclude(a => a.Subject)
+            .ThenInclude(a => a.Exams)
             .FirstOrDefaultAsync(expression);
             return student!;
         }
 
-        public async Task<ICollection<Student>> GetAll()
+        public async Task<ICollection<Student>> GetAll(string subAdminId)
         {
             var student = await _context.Set<Student>()
             .Include(a => a.SubAdmin)
+            .Include(a => a.User)
+            .Include(a => a.Results)
+            .Include(a => a.StudentExams)
+            .Include(a => a.StudentSubjects)
+            .Include(a => a.User)
+            .Where(a => a.IsDeleted == false && a.SubAdminId == subAdminId)
+            .ToListAsync();
+            return student!;
+        }
+
+        public async Task<ICollection<Student>> GetAll(Expression<Func<Student, bool>> expression)
+        {
+              var student = await _context.Set<Student>()
+             .Include(a => a.SubAdmin)
+            .Include(a => a.User)
+            .Include(a => a.Results)
+            .Include(a => a.StudentExams)
+            .Include(a => a.StudentSubjects)
+            .ThenInclude(a => a.Subject)
+            .ThenInclude(a => a.Exams)
+            .Where(expression)
             .ToListAsync();
             return student!;
         }
