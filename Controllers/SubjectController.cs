@@ -67,7 +67,7 @@ namespace cbtBackend.Controllers
         }
 
         [HttpPut]
-        public async Task<ActionResult<bool>> Update(UpdateSubjectRequestModel model)
+        public async Task<ActionResult<BaseResponse<SubjectDto>>> Update(UpdateSubjectRequestModel model)
         {
             var response = await _subjectService.Update(model);
             if (response.Status == false)
