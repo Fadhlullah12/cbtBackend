@@ -8,7 +8,6 @@ namespace cbtBackend.Repositories.Implementations
 {
     public class SubjectRepository : BaseRepository<Subject>, ISubjectRepository
     {
-        ApplicationContext _context;
         public SubjectRepository(ApplicationContext context)
         {
             _context = context;
@@ -17,25 +16,35 @@ namespace cbtBackend.Repositories.Implementations
         public async Task<Subject> Get(string id)
         {
             var subject = await _context.Set<Subject>()
-            .Include(a => a.StudentSubjects)
-            .FirstOrDefaultAsync(a => a.Id == id);
+            .Include(a => a.SubAdmin)
+           .Include(a => a.Exams)
+           .Include(a => a.Questions)
+           .Include(a => a.StudentSubjects)
+            .FirstOrDefaultAsync(a => a.Id == id && a.IsDeleted == false);
             return subject!;
         }
 
         public async Task<Subject> Get(Expression<Func<Subject, bool>> expression)
         {
              var subject = await _context.Set<Subject>()
-            .Include(a => a.StudentSubjects)
+            .Include(a => a.SubAdmin)
+           .Include(a => a.Exams)
+           .Include(a => a.Questions)
+           .Include(a => a.StudentSubjects)
             .FirstOrDefaultAsync(expression);
             return subject!;
         }
 
-        public async Task<ICollection<Subject>> GetAll()
+        public async Task<ICollection<Subject>> GetAll(Expression<Func<Subject, bool>> predicate)
         {
-            var subject = await _context.Set<Subject>()
-            .Include(a => a.StudentSubjects)
+            var sales = await _context.Set<Subject>()
+           .Include(a => a.SubAdmin)
+           .Include(a => a.Exams)
+           .Include(a => a.Questions)
+           .Include(a => a.StudentSubjects)
+            .Where(predicate)
             .ToListAsync();
-            return subject!;
+            return sales!; 
         }
     }
 }
