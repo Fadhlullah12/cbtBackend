@@ -5,6 +5,8 @@ namespace cbtBackend.Services.Interfaces
 {
     public interface IResultService
     {
-        Task<BaseResponse<CreateResultResponseModel>> LoginAsync(CreateResultRequestModel model); 
+        Task<BaseResponse<ICollection<ResultDto>>> GetStudentResultAsync(string studentId);
+        Task<BaseResponse<ICollection<ResultDto>>> GetSubjectResultAsync(string subjectId);
+        
     }
 }

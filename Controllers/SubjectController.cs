@@ -28,7 +28,7 @@ namespace cbtBackend.Controllers
         [HttpGet]
         public async Task<ActionResult<BaseResponse<ICollection<SubjectDto>>>> GetSubjects()
         {
-             var response = await _subjectService.ViewAllSubjectAsync();
+            var response = await _subjectService.ViewAllSubjectAsync();
             if (response.Status == false)
             {
                 return BadRequest(response.Message);
@@ -55,5 +55,29 @@ namespace cbtBackend.Controllers
             }
             return Ok(response);
         }
+
+        [HttpDelete("${Id}")]
+        public async Task<ActionResult<bool>> Delete(string Id)
+        {
+            var response = await _subjectService.Delete(Id);
+            if (response.Status == false)
+            {
+                return BadRequest();
+            }
+            return Ok(response);
+        }
+
+        [HttpPut]
+        public async Task<ActionResult<BaseResponse<SubjectDto>>> Update(UpdateSubjectRequestModel model)
+        {
+            var response = await _subjectService.Update(model);
+            if (response.Status == false)
+            {
+                return BadRequest();
+            }
+            return Ok(response);
+        }
+        
+
     }
 }

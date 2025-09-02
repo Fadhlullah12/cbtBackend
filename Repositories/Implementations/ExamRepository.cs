@@ -8,7 +8,6 @@ namespace cbtBackend.Repositories.Implementations
 {
     public class ExamRepository : BaseRepository<Exam>, IExamRepository
     {
-        ApplicationContext _context;
         public ExamRepository(ApplicationContext context)
         {
             _context = context;
@@ -18,8 +17,9 @@ namespace cbtBackend.Repositories.Implementations
         {
             var exam = await _context.Set<Exam>()
            .Include(a => a.Subject)
+           .ThenInclude(a => a.StudentSubjects)
            .Include(a => a.SubAdmin)
-           .FirstOrDefaultAsync(a => a.Id == id);
+           .FirstOrDefaultAsync(a => a.Id == id && a.IsDeleted == false);
             return exam!;
         }
 
@@ -27,16 +27,30 @@ namespace cbtBackend.Repositories.Implementations
         {
             var exam = await _context.Set<Exam>()
            .Include(a => a.Subject)
+           .ThenInclude(a => a.StudentSubjects)
            .Include(a => a.SubAdmin)
            .FirstOrDefaultAsync(expression);
-            return exam!; 
+            return exam!;
         }
 
         public async Task<ICollection<Exam>> GetAll()
         {
-             var exam = await _context.Set<Exam>()
+            var exam = await _context.Set<Exam>()
+          .Include(a => a.Subject)
+          .ThenInclude(a => a.StudentSubjects)
+          .Include(a => a.SubAdmin)
+          .ToListAsync();
+            return exam!;
+        }
+        public async Task<ICollection<Exam>> GetAll(Expression<Func<Exam , bool>> expression)
+        {
+            var exam = await _context.Set<Exam>()
            .Include(a => a.Subject)
+           .ThenInclude(a => a.StudentSubjects)
+           .ThenInclude(a => a.Student)
+           .ThenInclude(a => a.StudentExams)
            .Include(a => a.SubAdmin)
+           .Where(expression)
            .ToListAsync();
             return exam!;
         }

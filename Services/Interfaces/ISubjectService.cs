@@ -9,5 +9,7 @@ namespace cbtBackend.Services.Interfaces
         Task<BaseResponse<ICollection<SubjectDto>>> ViewAllSubjectAsync();
         Task<bool> UploadSubjectQuestionsAsync(UploadQuestionRequestModel model);
         Task<BaseResponse<ICollection<StudentDto>>> ViewAllSubjectStudentAsync(string subjectId);
+        Task<BaseResponse<bool>> Delete(string Id);
+        Task<BaseResponse<SubjectDto>> Update(UpdateSubjectRequestModel model);
     }
 }

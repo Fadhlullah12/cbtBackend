@@ -8,7 +8,6 @@ namespace cbtBackend.Repositories.Implementations
 {
     public class ResultRepository : BaseRepository<Result>, IResultRepository
     {
-        ApplicationContext _context;
         public ResultRepository(ApplicationContext context)
         {
             _context = context;
@@ -19,7 +18,7 @@ namespace cbtBackend.Repositories.Implementations
             var result = await _context.Set<Result>()
            .Include(a => a.Student)
            .Include(a => a.Exam)
-           .FirstOrDefaultAsync(a => a.Id == id);
+           .FirstOrDefaultAsync(a => a.Id == id && a.IsDeleted == false);
             return result!;
         }
 
@@ -32,13 +31,15 @@ namespace cbtBackend.Repositories.Implementations
             return result!;
         }
 
-        public async Task<ICollection<Result>> GetAll()
+        public async Task<ICollection<Result>> GetAll(Expression<Func<Result, bool>> expression)
         {
-            var result = await _context.Set<Result>()
-           .Include(a => a.Student)
-           .Include(a => a.Exam)
-           .ToListAsync();
-            return result!;
+             var results = await _context.Set<Result>()
+            .Include(a => a.Subject)
+            .Include(a => a.Student)
+            .Include(a => a.Exam)
+            .Where(expression)
+            .ToListAsync();
+            return results!;
         }
     }
 }
