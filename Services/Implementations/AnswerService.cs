@@ -24,7 +24,6 @@ namespace cbtBackend.Services.Implementations
                 return false;
             }
             answer.IsDeleted = true;
-            _answerRepository.Update(answer);
             await _answerRepository.Save();
             return true;
         }
