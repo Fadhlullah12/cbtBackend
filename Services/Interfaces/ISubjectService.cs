@@ -5,6 +5,11 @@ namespace cbtBackend.Services.Interfaces
 {
     public interface ISubjectService
     {
-        Task<BaseResponse<CreateSubjectResponseModel>> LoginAsync(CreateSubjectRequestModel model);
+        Task<BaseResponse<CreateSubjectResponseModel>> CreateSubjectAsync(CreateSubjectRequestModel model);
+        Task<BaseResponse<ICollection<SubjectDto>>> ViewAllSubjectAsync();
+        Task<bool> UploadSubjectQuestionsAsync(UploadQuestionRequestModel model);
+        Task<BaseResponse<ICollection<StudentDto>>> ViewAllSubjectStudentAsync(string subjectId);
+        Task<BaseResponse<bool>> Delete(string Id);
+        Task<BaseResponse<SubjectDto>> Update(UpdateSubjectRequestModel model);
     }
 }
