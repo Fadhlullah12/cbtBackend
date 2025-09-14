@@ -2,7 +2,6 @@ using cbtBackend.Dtos.RequestModels.UpdateRequstModels;
 using cbtBackend.Dtos.ResponseModels;
 using cbtBackend.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
-using Mysqlx.Crud;
 
 namespace cbtBackend.Controllers
 {
@@ -16,7 +15,7 @@ namespace cbtBackend.Controllers
             _questionService = questionService;
         }
 
-        [HttpGet("exam{examId}")]
+        [HttpGet("exam-questions/{examId}")]
         public async Task<ActionResult<BaseResponse<ExamResponse>>> LoadExamQuestions(string examId)
         {
             var response = await _questionService.LoadExamQuestions(examId);
@@ -54,7 +53,7 @@ namespace cbtBackend.Controllers
             var response = await _questionService.Delete(questionId);
             if (response == false)
             {
-                return BadRequest();
+                return BadRequest(response);
             }
             return Ok();
         }
