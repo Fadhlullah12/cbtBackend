@@ -36,7 +36,6 @@ namespace cbtBackend.Repositories.Implementations
              var results = await _context.Set<Result>()
             .Include(a => a.Subject)
             .Include(a => a.Student)
-            .ThenInclude(a => a.User)
             .Include(a => a.Exam)
             .Where(expression)
             .ToListAsync();

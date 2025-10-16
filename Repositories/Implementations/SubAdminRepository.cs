@@ -9,7 +9,8 @@ namespace cbtBackend.Repositories.Implementations
 {
     public class SubAdminRepository : BaseRepository<SubAdmin>, ISubAdminRepository
     {
-       public SubAdminRepository(ApplicationContext context)
+        ApplicationContext _context;
+        public SubAdminRepository(ApplicationContext context)
         {
             _context = context;
         }
@@ -17,16 +18,15 @@ namespace cbtBackend.Repositories.Implementations
         public async Task<SubAdmin> Get(string id)
         {
             var subAdmin = await _context.Set<SubAdmin>()
-            .Include(a => a.User)
-            .Include(a => a.Subjects)
             .Include(a => a.Students)
-            .Include(a => a.Exams)
-            .FirstOrDefaultAsync(a => a.Id == id && a.IsDeleted == false);
+            .Include(a => a.User)
+            .FirstOrDefaultAsync(a => a.Id == id);
             return subAdmin!;
         }
         public async Task<ICollection<SubAdmin>> GetUnApproved()
         {
             var subAdmin = await _context.Set<SubAdmin>()
+            .Include(a => a.Students)
             .Include(a => a.User)
             .Where(a => a.ApprovalStatus == ApprovalStatus.Pending)
             .ToListAsync();
@@ -36,17 +36,8 @@ namespace cbtBackend.Repositories.Implementations
         public async Task<SubAdmin> Get(Expression<Func<SubAdmin, bool>> expression)
         {
             var subAdmin = await _context.Set<SubAdmin>()
-            .Include(a => a.User)
-            .Include(a => a.Subjects)
-            .ThenInclude(a => a.Questions)
-            .Include(a => a.Students)
-            .ThenInclude(a => a.User)
-            .Include(a => a.Students)
-            .ThenInclude(a => a.StudentExams)
-             .Include(a => a.Students)
-            .ThenInclude(a => a.StudentSubjects)
-            .Include(a => a.Exams)
-            .AsSplitQuery()
+           .Include(a => a.Students)
+           .Include(a => a.User)
            .FirstOrDefaultAsync(expression);
             return subAdmin!;
         }
@@ -54,25 +45,10 @@ namespace cbtBackend.Repositories.Implementations
         public async Task<ICollection<SubAdmin>> GetAll()
         {
              var subAdmin = await _context.Set<SubAdmin>()
-            .Include(a => a.User)
-            .Include(a => a.Subjects)
             .Include(a => a.Students)
-            .Include(a => a.Exams)
-            .Where(a => a.IsDeleted == false)
+            .Include(a => a.User)
             .ToListAsync();
             return subAdmin!;
-        }
-
-        public async Task<ICollection<SubAdmin>> GetAll(Expression<Func<SubAdmin, bool>> expression)
-        {
-             var exam = await _context.Set<SubAdmin>()
-            .Include(a => a.User)
-            .Include(a => a.Subjects)
-            .Include(a => a.Students)
-            .Include(a => a.Exams)
-           .Where(expression)
-           .ToListAsync();
-            return exam!;
         }
     }
 }
