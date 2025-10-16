@@ -14,12 +14,14 @@ namespace cbtBackend.Services.Implementations
         IResultRepository _resultRepository;
         ISubAdminRepository _subAdminRepository;
         IStudentExamRepository _studentExamRepository;
+        IStudentSubjectRepository _studentSubjectRepository;
         ISubjectRepository _subjectRepository;
         IExamRepository _examRepository;
         IGetCurrentUser _getCurrentUser;
         IStudentRepository _studentRepository;
-        public ExamService(IGetCurrentUser getCurrentUser, ISubAdminRepository subAdminRepository, ISubjectRepository subjectRepository, IExamRepository examRepository, IStudentExamRepository studentExamRepository, IResultRepository resultRepository, IQuestionRepository questionRepository, IStudentRepository studentRepository)
+        public ExamService(IGetCurrentUser getCurrentUser, ISubAdminRepository subAdminRepository, ISubjectRepository subjectRepository, IExamRepository examRepository, IStudentExamRepository studentExamRepository, IResultRepository resultRepository, IQuestionRepository questionRepository, IStudentRepository studentRepository, IStudentSubjectRepository studentSubjectRepository)
         {
+            _studentSubjectRepository = studentSubjectRepository;
             _studentRepository = studentRepository;
             _questionRepository = questionRepository;
             _resultRepository = resultRepository;
@@ -44,17 +46,9 @@ namespace cbtBackend.Services.Implementations
             }
 
 
-            var subAdmin = await _subAdminRepository.Get(a => a.UserId == userId && a.IsDeleted == false);
-            var subject = await _subjectRepository.Get(a => a.SubAdminId == subAdmin.Id && a.SubjectName == model.SubjectName && a.IsDeleted == false);
-              if (subject == null)
-            {
-                return new BaseResponse<CreateExamResponseModel>
-                {
-                    Message = $"Could'nt find the Subject {model.SubjectName}",
-                    Status = false,
-                };
-            }
-            var students = subject.StudentSubjects.FirstOrDefault(a => a.SubjectId == subject.Id  && a.IsDeleted == false);
+            var subAdmin = await _subAdminRepository.Get(a => a.UserId == userId);
+            var subject = await _subjectRepository.Get(a => a.SubAdminId == subAdmin.Id && a.SubjectName == model.SubjectName);
+            var students = subject.StudentSubjects.FirstOrDefault(a => a.SubjectId == subject.Id);
             var questions = subject.Questions;
             var ongoingExam = subject.Exams.FirstOrDefault(a => a.Ongoing == true);
             if (ongoingExam != null)
@@ -62,15 +56,6 @@ namespace cbtBackend.Services.Implementations
                 return new BaseResponse<CreateExamResponseModel>
                 {
                     Message = "An Exam is still Valid for this Subject",
-                    Status = false,
-                };
-            }
-            
-             if (questions.Count == 0)
-            {
-                return new BaseResponse<CreateExamResponseModel>
-                {
-                    Message = "No Question have been Assigned to the Subject",
                     Status = false,
                 };
             }
@@ -82,28 +67,11 @@ namespace cbtBackend.Services.Implementations
                     Status = false,
                 };
             }
-            if (questions.Count < model.MaxQuestion)
+            if (questions.Count < model.MaxQuestion || questions.Count == 0)
             {
                 return new BaseResponse<CreateExamResponseModel>
                 {
-                    Message = "Questions are not Enough to Start Exam ",
-                    Status = false,
-                };
-            }
-            
-            if (model.DurationMinutes < 1)
-            {
-                return new BaseResponse<CreateExamResponseModel>
-                {
-                    Message = "Invalid Time Input",
-                    Status = false,
-                };
-            }
-            if (model.TimeScheduled < DateTime.Now)
-            {
-                return new BaseResponse<CreateExamResponseModel>
-                {
-                    Message = "Invalid Time Input",
+                    Message = "Questions are not Enough to Start Exam",
                     Status = false,
                 };
             }
@@ -135,17 +103,14 @@ namespace cbtBackend.Services.Implementations
             var exam = await _examRepository.Get(id);
             var subject = exam.Subject;
             var subAdmin = await _subAdminRepository.Get(a => a.UserId == userId);
-            var students = subAdmin.Students
-            .Where(a => !a.StudentExams.Any(b => b.ExamId == id  && a.IsDeleted == false))
-            .ToList();
-
+            var students = subAdmin.Students.Where(a => a.StudentExams.Any(b => b.ExamId != id));
             ICollection<StudentDto> absentStudents = [];
-            absentStudents = [.. students.Select(a => new StudentDto
+            absentStudents = students.Select(a => new StudentDto
             {
                 FullName = $"{a.User.FirstName} {a.User.LastName}",
                 Email = a.User.Email,
                 SerialNumber = a.SerialNumber,
-            })];
+            }).ToList();
             foreach (var student in students)
             {
                 var result = new Result
@@ -166,15 +131,15 @@ namespace cbtBackend.Services.Implementations
                     Student = student,
                     StudentId = student.Id
                 };
+                exam.Ongoing = false;
                 student.Results.Add(result);
                 student.StudentExams.Add(studentExams);
                 exam.StudentExams.Add(studentExams);
                 _examRepository.Update(exam);
                 await _resultRepository.Create(result);
                 await _studentExamRepository.Create(studentExams);
+                await _examRepository.Save();
             }
-            exam.Ongoing = false;
-            await _examRepository.Save();
             if (absentStudents != null)
             {
                 return new BaseResponse<EndExamResponseModel>
@@ -197,24 +162,11 @@ namespace cbtBackend.Services.Implementations
         public async Task<BaseResponse<ICollection<LoadExamsDto>>> LoadAvailableExamAsync()
         {
             var userId = _getCurrentUser.GetCurrentUserId();
-            var student = await _studentRepository.Get(a => a.UserId == userId  && a.IsDeleted == false);
-            if (student.StudentSubjects.Count == 0)
-            {
-                  return new BaseResponse<ICollection<LoadExamsDto>>
-                  {
-                      Status = false,
-                      Message = "No Subject Has been Registered for you.1Please Contact your Administrator"
-                  }; 
-            }
-            var studentExams = student.StudentSubjects.Where(a => a.IsDeleted == false).SelectMany(a => a.Subject.Exams).Where(a => a.Ongoing == true && a.TimeScheduled.Date < DateTime.Now.Date || a.TimeScheduled.TimeOfDay < DateTime.Now.TimeOfDay).ToList();
-            var availableExams = studentExams
-            .Where(e => !student.StudentExams.Any(se => se.ExamId == e.Id))
-            .ToList();
+            var student = await _studentRepository.Get(a => a.UserId == userId);
+            var availableExams = student.StudentSubjects.SelectMany(a => a.Subject.Exams).Where(a => a.Ongoing == true).ToList();
             var exams = availableExams.Select(a => new LoadExamsDto
             {
                 ExamId = a.Id,
-                NoOfQuestions = a.MaxQuestion,
-                Title = a.Title,
                 SubjectName = a.Subject.SubjectName,
             }).ToList();
             return new BaseResponse<ICollection<LoadExamsDto>>
@@ -234,7 +186,7 @@ namespace cbtBackend.Services.Implementations
                     Status = false,
                 };
             }
-            var exams = await _examRepository.GetAll(a => a.SubAdmin.UserId == userId && a.IsDeleted == false);
+            var exams = await _examRepository.GetAll(a => a.SubAdmin.UserId == userId);
 
             var listOfExams = exams.Select(b => new ExamDto
             {
@@ -242,34 +194,14 @@ namespace cbtBackend.Services.Implementations
                 Ongoing = b.Ongoing,
                 DateCreated = b.DateCreated,
                 SubjectName = b.Subject.SubjectName,
-                Title = b.Title,
-            }).ToList();
-            return new BaseResponse<ICollection<ExamDto>>()
-            {
-                Message = "Success",
-                Status = true,
-                Data = listOfExams
-            };
-        }
-         public async Task<BaseResponse<ICollection<ExamDto>>> GetOngoingExamsAsync()
-        {
-            var userId = _getCurrentUser.GetCurrentUserId();
-            if (userId == null)
-            {
-                return new BaseResponse<ICollection<ExamDto>>()
+                Students = [.. b.StudentExams.Select(a => new StudentDto
                 {
-                    Message = "Session Expired Pls Login Again",
-                    Status = false,
-                };
-            }
-            var exams = await _examRepository.GetAll(a => a.SubAdmin.UserId == userId && a.Ongoing == true && a.IsDeleted == false);
+                    Email = a.Student.User.Email,
+                    FullName = $"{a.Student.User.FirstName} {a.Student.User.LastName}",
+                    SerialNumber = a.Student.SerialNumber
+                }
 
-            var listOfExams = exams.Select(b => new ExamDto
-            {
-                Id = b.Id,
-                DateCreated = b.DateCreated,
-                SubjectName = b.Subject.SubjectName,
-                Title = b.Title,
+                )]
             }).ToList();
             return new BaseResponse<ICollection<ExamDto>>()
             {
@@ -284,9 +216,6 @@ namespace cbtBackend.Services.Implementations
             int score = 0;
             var answerDict = model.Answers.ToDictionary(a => a.QuestionId, a => a.SelectedOption);
             Dictionary<string, string> review = [];
-            var student = await _studentRepository.Get(a => a.User.Id == userId);
-            var exam = await _examRepository.Get(model.ExamId);
-            var subject = exam.Subject;
             foreach (var item in answerDict)
             {
                 var question = await _questionRepository.Get(a => a.Id == item.Key);
@@ -299,7 +228,10 @@ namespace cbtBackend.Services.Implementations
                 else if (item.Value == "No answer") review.Add(question.Text, "No answer");
                 else review.Add(question.Text, "Wrong");
             }
-
+             
+            var student = await _studentRepository.Get(a => a.User.Id == userId);
+            var exam = await _examRepository.Get(model.ExamId);
+            var subject = exam.Subject;
             var result = new Result
             {
                 Score = score,
