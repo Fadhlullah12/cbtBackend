@@ -21,7 +21,7 @@ namespace cbtBackend.Controllers
             var response = await _studentService.RegisterStudent(model);
             if (response.Status == false)
             {
-                return Conflict(response.Message);
+                return Conflict(response);
             }
             return Ok(response);
         }
@@ -29,12 +29,20 @@ namespace cbtBackend.Controllers
         public async Task<ActionResult<BaseResponse<CreateStudentResponseModel>>> RegisterStudents(IEnumerable<CreateStudentRequestModel> models)
         {
             var response = await _studentService.RegisterStudents(models);
+            if (response.Status == false)
+            {
+                return BadRequest(response);
+            }
             return Ok(response);
         }
         [HttpPost("assign/subjects")]
         public async Task<ActionResult<BaseResponse<CreateStudentResponseModel>>> AssignSubjects(AssignSubjectsRequestModel model)
         {
             var response = await _studentService.AssignSubjects(model);
+            if (response == false)
+            {
+                return Conflict(response);
+            }
             return Ok(response);
         }
         [HttpGet]
@@ -63,17 +71,17 @@ namespace cbtBackend.Controllers
             var response = await _studentService.ViewAllStudentExamsAsync(studentId);
             if (response.Status == false)
             {
-                return BadRequest(response.Message);
+                return BadRequest(response);
             }
             return Ok(response);
         }
-        [HttpGet("results ${Id}")]
-        public async Task<ActionResult<BaseResponse<ICollection<ResultDto>>>> GetStudentResult(string Id)
+        [HttpGet("results/{Id}")]
+        public async Task<ActionResult<BaseResponse<ICollection<ResultsDto>>>> GetStudentResult(string Id)
         {
             var response = await _studentService.ViewStudentResultAsync(Id);
             if (response.Status == false)
             {
-                return BadRequest(response.Message);
+                return BadRequest(response);
             }
             return Ok(response);
         }
@@ -88,13 +96,35 @@ namespace cbtBackend.Controllers
             return Ok(response);
         }
 
-         [HttpPut]
+        [HttpPut]
         public async Task<ActionResult<BaseResponse<StudentDto>>> UpdateStudent(UpdateStudentRequestModel model)
         {
             var response = await _studentService.UpdateStudent(model);
             if (response.Status == false)
             {
-                return BadRequest(response.Message);
+                return BadRequest(response);
+            }
+            return Ok(response);
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<ActionResult<BaseResponse<StudentDto>>> DeleteStudent(string id)
+        {
+            var response = await _studentService.Delete(id);
+            if (response == false)
+            {
+                return BadRequest(response);
+            }
+            return Ok(response);
+        }
+        
+        [HttpDelete ("subject/{studentSubjectId}")]
+        public async Task<ActionResult<BaseResponse<StudentDto>>> DeleteStudentSubject(string studentSubjectId)
+        {
+            var response = await _studentService.DeleteStudentSubject(studentSubjectId);
+            if (response == false)
+            {
+                return BadRequest(response);
             }
             return Ok(response);
         }

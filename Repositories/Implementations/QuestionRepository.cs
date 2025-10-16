@@ -13,9 +13,14 @@ namespace cbtBackend.Repositories.Implementations
             _context = context;
         }
 
-        public Task<Question> Get(string id)
+         public async Task<Question> Get(string id)
         {
-            throw new NotImplementedException();
+            var exam = await _context.Set<Question>()
+            .Include(a => a.Answers)
+           .Include(a => a.Subject)
+           .ThenInclude(a => a.StudentSubjects)
+           .FirstOrDefaultAsync(a => a.Id == id && a.IsDeleted == false);
+            return exam!;
         }
 
         public async Task<Question> Get(Expression<Func<Question, bool>> expression)

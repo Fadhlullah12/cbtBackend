@@ -9,10 +9,14 @@ namespace cbtBackend.Services.Implementations
     {
         IQuestionRepository _questionRepository;
         IExamRepository _examRepository;
+        IGetCurrentUser _getCurrentUser;
+        IStudentRepository _studentRepository;
         ISubjectRepository _subjectRepository;
         IAnswerRepository _answerRepository;
-        public QuestionService(IQuestionRepository questionRepository, IExamRepository examRepository, ISubjectRepository subjectRepository,IAnswerRepository answerRepository)
+        public QuestionService(IQuestionRepository questionRepository, IExamRepository examRepository, ISubjectRepository subjectRepository,IAnswerRepository answerRepository,IGetCurrentUser getCurrentUser,IStudentRepository studentRepository)
         {
+            _studentRepository = studentRepository;
+            _getCurrentUser = getCurrentUser;
             _answerRepository = answerRepository;
             _subjectRepository = subjectRepository;
             _examRepository = examRepository;
@@ -21,7 +25,10 @@ namespace cbtBackend.Services.Implementations
 
         public async Task<BaseResponse<ExamResponse>> LoadExamQuestions(string examId)
         {
+            var userId = _getCurrentUser.GetCurrentUserId();
+            var student = await _studentRepository.Get(a => a.UserId == userId);
             var exam = await _examRepository.Get(examId);
+
             var questions = await _questionRepository.GetAll(exam.SubjectId, exam.MaxQuestion);
             return new BaseResponse<ExamResponse>
             {
@@ -44,8 +51,9 @@ namespace cbtBackend.Services.Implementations
         public async Task<BaseResponse<ICollection<QuestionDto>>> GetSubjectQuestions(string subjectId)
         {
             var subject = await _subjectRepository.Get(subjectId);
-            var subjectQuestions = subject.Questions.Select(s => new QuestionDto
+            var subjectQuestions = subject.Questions.Where(a => a.IsDeleted == false).Select(s => new QuestionDto
             {
+                Id = s.Id,
                 Label = s.Text,
                 Answers = s.Answers.Select(a => a.Label).ToList()
             }).ToList();

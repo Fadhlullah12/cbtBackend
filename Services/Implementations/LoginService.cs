@@ -44,7 +44,9 @@ namespace cbtBackend.Services.Implementations
                     Data = new LoginResponseModel
                     {
                         Role = existingUser.Role,
-                        UserName = $"{existingUser.FirstName} {existingUser.LastName}"
+                        UserName = $"{existingUser.FirstName} {existingUser.LastName}",
+                        Email = existingUser.Email,
+                        Id  = existingUser.Id,
                     }
                 };
             }

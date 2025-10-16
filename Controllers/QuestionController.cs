@@ -21,18 +21,18 @@ namespace cbtBackend.Controllers
             var response = await _questionService.LoadExamQuestions(examId);
             if (response.Status == false)
             {
-                return BadRequest(response.Message);
+                return BadRequest(response);
             }
             return Ok(response);
         }
 
-        [HttpGet("subject{subjectId}")]
+        [HttpGet("subject/{subjectId}")]
         public async Task<ActionResult<BaseResponse<BaseResponse<ICollection<QuestionDto>>>>> GetSubjectQuestions(string subjectId)
         {
             var response = await _questionService.GetSubjectQuestions(subjectId);
             if (response.Status == false)
             {
-                return BadRequest(response.Message);
+                return BadRequest(response);
             }
             return Ok(response);
         }
@@ -47,10 +47,10 @@ namespace cbtBackend.Controllers
             }
             return Ok();
         }
-          [HttpDelete]
-        public async Task<ActionResult<bool>> Delete(string questionId)
+          [HttpDelete ("{Id}")]
+        public async Task<ActionResult<bool>> Delete(string Id)
         {
-            var response = await _questionService.Delete(questionId);
+            var response = await _questionService.Delete(Id);
             if (response == false)
             {
                 return BadRequest(response);

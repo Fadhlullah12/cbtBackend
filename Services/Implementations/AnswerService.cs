@@ -10,7 +10,7 @@ namespace cbtBackend.Services.Implementations
     {
         IAnswerRepository _answerRepository;
         IQuestionRepository _questionRepository;
-        public AnswerService(IAnswerRepository answerRepository,IQuestionRepository questionRepository)
+        public AnswerService(IAnswerRepository answerRepository, IQuestionRepository questionRepository)
         {
             _questionRepository = questionRepository;
             _answerRepository = answerRepository;
@@ -47,6 +47,32 @@ namespace cbtBackend.Services.Implementations
             answer.Label = model.Label;
             await _answerRepository.Save();
             return true;
+        }
+
+        public async Task<BaseResponse<ICollection<AnswerDto>>> GetQuestionAnswers(string questionId)
+        {
+            var answerObjects = await _answerRepository.GetAll(a => a.QuestionId == questionId && a.IsDeleted == false);
+            if (answerObjects == null)
+            {
+                return new BaseResponse<ICollection<AnswerDto>>
+                {
+                    Message = "Subject not found.",
+                    Status = false
+                };
+            }
+            var answers = answerObjects.Select(a => new AnswerDto
+            {
+                Id = a.Id,
+                Label = a.Label,
+                IsCorrect = a.IsCorrect
+            }).ToList();
+            return new BaseResponse<ICollection<AnswerDto>>
+            {
+                Data = answers,
+                Status = true,
+            };
+
+
         }
     }
 }
