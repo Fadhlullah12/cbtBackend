@@ -1,4 +1,3 @@
-using cbtbackend.Repositories.Interface;
 using cbtBackend.Context;
 using cbtBackend.Repositories.Implementations;
 using cbtBackend.Repositories.Interfaces;
@@ -18,39 +17,16 @@ builder.Services.AddDbContext<ApplicationContext>(opt =>
 builder.Services.AddCors(options =>
     {
         options.AddPolicy("AllowSpecificOrigin",
-            builder => builder.WithOrigins("https://fadhlullah12.github.io")
+            builder => builder.WithOrigins("http://127.0.0.1:5500")
                               .AllowAnyHeader()
                               .AllowAnyMethod());
     });
 builder.Services.AddControllers();
-builder.Services.AddMemoryCache();
+
 //Add Repositories
 builder.Services.AddScoped<IUserRepository, UserRepository>();
-builder.Services.AddScoped<IExamRepository, ExamRepository>();
-builder.Services.AddScoped<IResultRepository, ResultRepository>();
-builder.Services.AddScoped<IStudentRepository, StudentRepository>();
-builder.Services.AddScoped<ISubAdminRepository, SubAdminRepository>();
-builder.Services.AddScoped<ISubjectRepository, SubjectRepository>();
-builder.Services.AddScoped<IStudentSubjectRepository, StudentSubjectRepository>();
-builder.Services.AddScoped<IStudentExamRepository, StudentExamRepository>();
-builder.Services.AddScoped<IAnswerRepository, AnswerRepository>();
-builder.Services.AddScoped<IQuestionRepository, QuestionRepository>();
 //Add Services
-builder.Services.AddScoped<IAnswerService, AnswerService>();
-builder.Services.AddScoped<IStudentService, StudentService>();
-builder.Services.AddScoped<ISubAdminService, SubAdminService>();
-builder.Services.AddScoped<ISubjectService, SubjectService>();
-builder.Services.AddScoped<IQuestionService, QuestionService>();
-builder.Services.AddScoped<IResultService, ResultService>();
-builder.Services.AddScoped<IMailService, MailService>();
-builder.Services.AddScoped<IExamService, ExamService>();
-builder.Services.AddScoped<HomePageService>();
-builder.Services.AddScoped<IGetCurrentUser, GetCurrentUser>();
 builder.Services.AddScoped<ILoginService, LoginService>();
-builder.Services.AddScoped<TokenService>();
-builder.Services.AddScoped<TokenService>();
-
-builder.Services.AddHttpContextAccessor();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -82,7 +58,7 @@ app.MapGet("/weatherforecast", () =>
 .WithName("GetWeatherForecast")
 .WithOpenApi();
 app.UseRouting();
-app.UseCors("AllowSpecificOrigin");
+app.UseCors("AllowAllOrigins");
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseHttpsRedirection();

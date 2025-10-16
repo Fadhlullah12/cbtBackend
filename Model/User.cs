@@ -1,11 +1,14 @@
-namespace cbtBackend.Dtos.RequestModels
+namespace cbtBackend.Model
 {
-    public class UpdateStudentRequestModel
+    public class User : BaseEntity
     {
-        public string Id { get; set; } = default!;
         public string Email { get; set; } = default!;
         public string Password { get; set; } = default!;
         public string FirstName { get; set; } = default!;
         public string LastName { get; set; } = default!;
+        public string Role { get; set; } = default!;
+        public SubAdmin SubAdmin { get; set; } = default!;
+        public Student Student { get; set; } = default!;
+
     }
 }
