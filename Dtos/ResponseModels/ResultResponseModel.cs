@@ -1,6 +1,6 @@
 namespace cbtBackend.Dtos.ResponseModels
 {
-    public class CreateResultResponseModel
+    public class ResultResponseModel
     {
         public int Score { get; set; } = default!;
         public string ExamId { get; set; } = default!;

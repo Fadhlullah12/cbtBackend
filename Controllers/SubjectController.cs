@@ -21,21 +21,21 @@ namespace cbtBackend.Controllers
             var response = await _subjectService.CreateSubjectAsync(model);
             if (response.Status == false)
             {
-                return Conflict(response.Message);
+                return BadRequest(response);
             }
             return Ok(response);
         }
         [HttpGet]
         public async Task<ActionResult<BaseResponse<ICollection<SubjectDto>>>> GetSubjects()
         {
-             var response = await _subjectService.ViewAllSubjectAsync();
+            var response = await _subjectService.ViewAllSubjectAsync();
             if (response.Status == false)
             {
-                return BadRequest(response.Message);
+                return BadRequest(response);
             }
             return Ok(response);
         }
-        [HttpGet("students")]
+        [HttpGet("students/{Id}")]
         public async Task<ActionResult<BaseResponse<ICollection<StudentDto>>>> GetSubjectStudents(string Id)
         {
             var response = await _subjectService.ViewAllSubjectStudentAsync(Id);
@@ -55,7 +55,8 @@ namespace cbtBackend.Controllers
             }
             return Ok(response);
         }
-         [HttpDelete("${Id}")]
+
+        [HttpDelete("{Id}")]
         public async Task<ActionResult<bool>> Delete(string Id)
         {
             var response = await _subjectService.Delete(Id);
@@ -72,9 +73,11 @@ namespace cbtBackend.Controllers
             var response = await _subjectService.Update(model);
             if (response.Status == false)
             {
-                return BadRequest();
+                return BadRequest(response);
             }
             return Ok(response);
         }
+        
+
     }
 }

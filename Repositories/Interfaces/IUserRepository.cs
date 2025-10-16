@@ -5,6 +5,7 @@ namespace cbtBackend.Repositories.Interfaces
 {
     public interface IUserRepository : IBaseRepository<User>
     {
-        Task <User> Get(Expression<Func<User, bool>> predicate);
+        Task<User> Get(string id);
+        Task<User> Get(Expression<Func<User, bool>> predicate);
     }
 }

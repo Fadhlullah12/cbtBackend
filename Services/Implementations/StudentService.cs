@@ -15,8 +15,10 @@ namespace cbtBackend.Services.Implementations
         IStudentRepository _studentRepository;
         IGetCurrentUser _getCurrentUser;
         IStudentSubjectRepository _studentSubjectRepository;
-        public StudentService(IUserRepository userRepository, IStudentRepository studentRepository, IGetCurrentUser getCurrentUser, ISubAdminRepository subAdminRepository, IStudentSubjectRepository studentSubjectRepository, IStudentExamRepository studentExamRepository, ISubjectRepository subjectRepository)
+        IResultRepository _resultRepository;
+        public StudentService(IUserRepository userRepository, IStudentRepository studentRepository, IGetCurrentUser getCurrentUser, ISubAdminRepository subAdminRepository, IStudentSubjectRepository studentSubjectRepository, IStudentExamRepository studentExamRepository, ISubjectRepository subjectRepository, IResultRepository resultRepository)
         {
+            _resultRepository = resultRepository;
             _subjectRepository = subjectRepository;
             _studentExamRepository = studentExamRepository;
             _studentSubjectRepository = studentSubjectRepository;
@@ -75,9 +77,16 @@ namespace cbtBackend.Services.Implementations
 
         public async Task<bool> AssignSubjects(AssignSubjectsRequestModel model)
         {
-            var student = await _studentRepository.Get(model.SudentId);
+            var student = await _studentRepository.Get(model.StudentId);
+            bool exist = false;
             foreach (var subjectId in model.SubjectIds)
             {
+                var exists = student.StudentSubjects.FirstOrDefault(a => a.SubjectId == subjectId);
+                if (exists != null)
+                {
+                    exist = true;
+                    continue;
+                }
                 var subject = await _subjectRepository.Get(subjectId);
                 var studentSubject = new StudentSubject
                 {
@@ -89,6 +98,10 @@ namespace cbtBackend.Services.Implementations
                 await _studentSubjectRepository.Create(studentSubject);
                 subject.StudentSubjects.Add(studentSubject);
                 student.StudentSubjects.Add(studentSubject);
+            }
+            if (exist == true)
+            {
+                return false;
             }
             await _studentRepository.Save();
             return true;
@@ -152,7 +165,7 @@ namespace cbtBackend.Services.Implementations
             }
             return new BaseResponse<CreateMultipleStudentResponseModel>
             {
-
+                Status = false,
                 Data = new CreateMultipleStudentResponseModel
                 {
                     registeredStudents = registeredStudents,
@@ -172,14 +185,15 @@ namespace cbtBackend.Services.Implementations
                 };
             }
             var subAdmin = await _subAdminRepository.Get(a => a.UserId == userId);
-            var students = subAdmin.Students;
+            var students = await _studentRepository.GetAll(subAdmin.Id);
 
             var listOfStudents = students.Select(a => new StudentDto
             {
+                Id = a.Id,
                 FullName = $"{a.User.FirstName} {a.User.LastName}",
                 Email = a.User.Email,
                 SerialNumber = a.SerialNumber,
-                ExamsTaken = a.StudentExams.Count
+                Subjects = a.StudentSubjects.Count
             }).ToList();
             return new BaseResponse<ICollection<StudentDto>>()
             {
@@ -205,7 +219,6 @@ namespace cbtBackend.Services.Implementations
             {
                 Title = a.Exam.Title,
                 DateCreated = a.Exam.DateCreated,
-                Ongoing = a.Exam.Ongoing,
                 SubjectName = a.Exam.Subject.SubjectName,
             }).ToList();
             return new BaseResponse<ICollection<ExamDto>>()
@@ -232,38 +245,144 @@ namespace cbtBackend.Services.Implementations
 
         public async Task<BaseResponse<StudentDto>> UpdateStudent(UpdateStudentRequestModel model)
         {
-            var user = await _userRepository.Get(a => a.Email == model.Email && a.Id != model.Id);
-            var student = await _studentRepository.Get(a => a.UserId == model.Id);
-            if (user == null)
+            var existingUser = await _userRepository.Get(a => a.Email == model.Email && a.Id != model.Id);
+            if (existingUser != null)
             {
                 return new BaseResponse<StudentDto>
                 {
-                    Message = $"Sorry user with Email already exists",
+                    Message = "Sorry, a user with this email already exists.",
                     Status = false,
                 };
             }
 
-            user.Email = model.Email;
-            user.FirstName = model.FirstName;
-            user.LastName = model.LastName;
-            user.Password = BCrypt.Net.BCrypt.HashPassword(model.Password);
-            student.User = user;
-            student.UserId = user.Id;
-            user.Student = student;
-             _studentRepository.Update(student);
-             _userRepository.Update(user);
-            await _subAdminRepository.Save();
+            var student = await _studentRepository.Get(a => a.Id == model.Id);
+            if (student == null)
+            {
+                return new BaseResponse<StudentDto>
+                {
+                    Message = "Student not found.",
+                    Status = false,
+                };
+            }
+
+
+
+            student.User.Email = model.Email;
+            student.User.FirstName = model.FirstName;
+            student.User.LastName = model.LastName;
+            student.User.Student = student;
+            _studentRepository.Update(student);
+            await _userRepository.Save(); // Or your actual unit of work
+
             return new BaseResponse<StudentDto>
             {
-                Message = "Profile Updated Sucessfully",
+                Message = "Profile updated successfully.",
                 Status = true,
                 Data = new StudentDto
                 {
-                    Email = user.Email,
-                    FullName = $"{user.FirstName} {user.LastName}",
+                    Email = student.User.Email,
+                    FullName = $"{student.User.FirstName} {student.User.LastName}",
                     SerialNumber = student.SerialNumber,
                 }
             };
+
         }
+
+        public async Task<BaseResponse<ICollection<ResultsDto>>> ViewStudentResultAsync(string studentId)
+        {
+            var exams = await _studentSubjectRepository.GetStudentsAsync(studentId);
+
+            var listOfResults = exams.Select(a => new ResultsDto
+            {
+                Id = a.Id,
+                SubjectName = a.Subject.SubjectName,
+                NoOfResults = a.Student.Results
+                    .Where(r => r.Exam.SubjectId == a.Subject.Id)
+                    .Count(),
+
+                ProfileResults = a.Student.Results
+                    .Where(r => r.Exam.SubjectId == a.Subject.Id)
+                    .Select(b => new ProfileResultsDto
+                    {
+                        Title = b.Exam.Title,
+                        Score = b.Score,
+                        Questions = b.Exam.MaxQuestion,
+                        DateCreated = b.DateCreated.ToString("yyyy-MM-dd")
+                    }).ToList()
+            }).ToList();
+
+            return new BaseResponse<ICollection<ResultsDto>>()
+            {
+                Message = "Success",
+                Status = true,
+                Data = listOfResults
+            };
+        }
+
+
+        public async Task<BaseResponse<ICollection<AllStudentsResultsdto>>> ViewStudentsResultAsync()
+        {
+            var userId = _getCurrentUser.GetCurrentUserId();
+            var students = await _studentRepository.GetAll(a => a.SubAdmin.UserId == userId && a.IsDeleted == false);
+            var listOfStudentsResults = students.Select(a => new AllStudentsResultsdto
+            {
+                FullName = $"{a.User.FirstName} {a.User.LastName}",
+                Results = [.. a.Results.Select(r => new MultipleStudentResultDto
+                {
+                    Title = r.Exam.Title,
+                    Questions = r.Exam.MaxQuestion,
+                    SubjectName = r.Subject.SubjectName,
+                    Score = r.Score
+                })]
+            }).ToList();
+            return new BaseResponse<ICollection<AllStudentsResultsdto>>()
+            {
+                Message = "Success",
+                Status = true,
+                Data = listOfStudentsResults
+            };
+        }
+
+        public async Task<bool> Delete(string id)
+        {
+            var student = await _studentRepository.Get(id);
+            if (student == null)
+            {
+                return false;
+            }
+            student.IsDeleted = true;
+            if (student.Results.Count > 0)
+            {
+                foreach (var item in student.Results)
+                {
+                    item.IsDeleted = true;
+                }
+            }
+            if (student.StudentSubjects.Count > 0)
+            {
+                foreach (var item in student.StudentSubjects)
+                {
+                    item.IsDeleted = true;
+                }
+            }
+            if (student.StudentExams.Count > 0)
+            {
+                foreach (var item in student.StudentExams)
+                {
+                    item.IsDeleted = true;
+                }
+            }
+            await _studentRepository.Save();
+            return true;
+        }
+        
+          public async Task<bool> DeleteStudentSubject(string id)
+        {
+            var studentSubject = await _studentSubjectRepository.Get(id);
+            studentSubject.IsDeleted = true;
+            await _studentRepository.Save();
+            return true;
+        }
+
     }
 }

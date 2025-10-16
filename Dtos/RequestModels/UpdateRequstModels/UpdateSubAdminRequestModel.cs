@@ -1,6 +1,6 @@
 namespace cbtBackend.Dtos.RequestModels
 {
-    public class CreateSubAdminRequestModel
+    public class UpdateSubAdminRequestModel
     {
         public string Email { get; set; } = default!;
         public string Password { get; set; } = default!;
