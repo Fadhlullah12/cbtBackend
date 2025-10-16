@@ -9,6 +9,7 @@ namespace cbtBackend.Repositories.Interfaces
         Task<SubAdmin> Get(string id);
         Task<ICollection<SubAdmin>> GetUnApproved();
         Task<SubAdmin> Get(Expression<Func<SubAdmin, bool>> expression);
+        Task<ICollection<SubAdmin>> GetAll(Expression<Func<SubAdmin, bool>> expression);
         Task<ICollection<SubAdmin>> GetAll(); 
     }
 }

@@ -4,45 +4,47 @@ using System.Security.Cryptography;
 using System.Text;
 using cbtBackend.Dtos.RequestModels;
 using cbtBackend.Dtos.ResponseModels;
+using cbtBackend.Repositories.Interfaces;
 using cbtBackend.Services.Interfaces;
-using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 namespace cbtBackend.Controllers
 {
     [ApiController]
-    [EnableCors("AllowSpecificOrigin")]
-    [Route("api/[controller]")]
+    [Route("/users")]
     public class UserController : ControllerBase
     {
         ILoginService _loginService;
-        public UserController(ILoginService loginService)
+        IUserRepository _userRepository;
+        public UserController(ILoginService loginService,IUserRepository userRepository)
         {
+            _userRepository = userRepository;
             _loginService = loginService;
         }
 
-        [HttpPost("Login")]
+        [HttpPost("login")]
         public async Task<ActionResult<BaseResponse<LoginRequestModel>>> Login([FromBody] LoginRequestModel model)
         {
             var userCreds = await _loginService.LoginAsync(model);
             if (userCreds.Status == false)
             {
-                return Unauthorized();
+                return Unauthorized(userCreds);
             }
             var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.Role, userCreds.Data!.Role),
                 new Claim(ClaimTypes.Name, userCreds.Data.UserName),
-                new Claim(ClaimTypes.Email, userCreds.Data.Email)
+                new Claim(ClaimTypes.Email, userCreds.Data.Email),
+                new Claim(ClaimTypes.NameIdentifier, userCreds.Data.Id)
             };
             string token = GenerateToken(claims);
-            return Ok(new { Token = token });
+            return Ok(new { Token = token , User = userCreds});
         }
-       [HttpGet("Logout")]
-        public async Task<IActionResult> Logout()
-        {
-            return Ok("Logout successful");
-        }
+    //    [HttpGet("Logout")]
+    //     public async Task<IActionResult> Logout()
+    //     {
+
+    //     }
 
         private string GenerateToken(IEnumerable<Claim> claims)
         {

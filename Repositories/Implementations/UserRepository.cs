@@ -6,19 +6,30 @@ using Microsoft.EntityFrameworkCore;
 
 namespace cbtBackend.Repositories.Implementations
 {
-    public class UserRepository : BaseRepository<User> ,IUserRepository
+    public class UserRepository : BaseRepository<User>, IUserRepository
     {
-        ApplicationContext _applicationContext;
-        public UserRepository(ApplicationContext applicationContext)
+        public UserRepository(ApplicationContext context)
         {
-            _applicationContext = applicationContext;
+            _context = context;
         }
 
         public async Task<User> Get(Expression<Func<User, bool>> predicate)
         {
-             var user = await _applicationContext.Set<User>()
-             .FirstOrDefaultAsync(predicate);
+             var user = await _context.Set<User>()
+            .Include(a => a.Student)
+            .Include(a => a.SubAdmin)
+            .FirstOrDefaultAsync(predicate);
             return user!;
         }
+      
+        public async Task<User> Get(string id)
+        {
+            var user = await _context.Set<User>()
+            .Include(a => a.Student)
+            .Include(a => a.SubAdmin)
+            .FirstOrDefaultAsync(a => a.Id == id && a.IsDeleted == false);
+            return user!;
+        }
+        
     }
 }

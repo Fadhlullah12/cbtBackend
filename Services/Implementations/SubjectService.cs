@@ -31,7 +31,7 @@ namespace cbtBackend.Services.Implementations
         {
             var userId = _currentUser.GetCurrentUserId();
             var subAdmin = await _subAdminRepository.Get(a => a.UserId == userId);
-            var existingSubject = subAdmin.Subjects.FirstOrDefault(a => a.SubjectName == model.SubjectName);
+            var existingSubject = subAdmin.Subjects.FirstOrDefault(a => a.SubjectName == model.SubjectName && a.IsDeleted == false);
             if (existingSubject != null)
             {
                 return new BaseResponse<CreateSubjectResponseModel>
@@ -95,10 +95,11 @@ namespace cbtBackend.Services.Implementations
                     Status = false,
                 };
             }
-            var subjects = await _subjectRepository.GetAll(a => a.SubAdmin.UserId == userId);
+            var subjects = await _subjectRepository.GetAll(a => a.SubAdmin.UserId == userId && a.IsDeleted == false);
 
             var listOfSubjects = subjects.Select(a => new SubjectDto
             {
+                Id = a.Id,
                 SubjectName = a.SubjectName,
                 SubjectExams = a.Exams.Count,
                 SubjectStudents = a.StudentSubjects.Count
@@ -117,9 +118,11 @@ namespace cbtBackend.Services.Implementations
             var studentSubjects = await _studentSubjectRepository.GetSubjectsAsync(subjectId);
             var listOfStudents = studentSubjects.Select(a => new StudentDto
             {
+                Id = a.Id,
                 FullName = $"{a.Student.User.FirstName} {a.Student.User.LastName}",
                 Email = a.Student.User.Email,
-                SerialNumber = a.Student.SerialNumber
+                SerialNumber = a.Student.SerialNumber,
+                Subjects = a.Student.StudentSubjects.Count
             }).ToList();
             return new BaseResponse<ICollection<StudentDto>>()
             {
@@ -128,6 +131,8 @@ namespace cbtBackend.Services.Implementations
                 Data = listOfStudents
             };
         }
+
+     
         public async Task<bool> UploadSubjectQuestionsAsync(UploadQuestionRequestModel model)
         {
             var subject = await _subjectRepository.Get(model.Id);
@@ -142,25 +147,69 @@ namespace cbtBackend.Services.Implementations
         
          public async Task<BaseResponse<SubjectDto>> Update(UpdateSubjectRequestModel model)
         {
+            var userId = _currentUser.GetCurrentUserId();
+            var subAdmin = await _subAdminRepository.Get(a => a.UserId == userId);
             var subject = await _subjectRepository.Get(model.Id);
+            if (subject == null)
+            {
+                return new BaseResponse<SubjectDto>
+                {
+                    Message = "Subject not found.",
+                    Status = false
+                };
+            }
+
+            if (subject.SubjectName.Equals(model.SubjectName, StringComparison.OrdinalIgnoreCase))
+            {
+                return new BaseResponse<SubjectDto>
+                {
+                    Message = "No changes detected. Subject name remains the same.",
+                    Status = true,
+                    Data = new SubjectDto
+                    {
+                        SubjectName = subject.SubjectName
+                    }
+                };
+            }
+
+            var existingSubject =  subAdmin.Subjects.FirstOrDefault(a => a.SubjectName == model.SubjectName && a.Id != model.Id);
+            if (existingSubject != null)
+            {
+                return new BaseResponse<SubjectDto>
+                {
+                    Message = "A subject with this name already exists.",
+                    Status = false
+                };
+            }
+
             subject.SubjectName = model.SubjectName;
             _subjectRepository.Update(subject);
             await _subjectRepository.Save();
+
             return new BaseResponse<SubjectDto>
             {
-                Message = "Updated Succesfully",
+                Message = "Updated successfully.",
                 Status = true,
                 Data = new SubjectDto
                 {
-                    SubjectName = subject.SubjectName,
+                    SubjectName = subject.SubjectName
                 }
             };
+
+
         }
 
          public async Task<BaseResponse<bool>> Delete(string Id)
         {
             var subject = await _subjectRepository.Get(Id);
             subject.IsDeleted = true;
+            if (subject.StudentSubjects.Count > 0)
+            {
+                foreach (var item in subject.StudentSubjects)
+                {
+                    item.IsDeleted = true;
+                }
+            }
             _subjectRepository.Update(subject);
             await _subjectRepository.Save();
             return new BaseResponse<bool>
@@ -190,7 +239,6 @@ namespace cbtBackend.Services.Implementations
                     Subject = subject,
                     SubjectId = subject.Id,
                 };
-                questions.Add(question);
                 foreach (var line in lines.Skip(1))
                 {
                     {
@@ -215,7 +263,10 @@ namespace cbtBackend.Services.Implementations
                         answers.Add(answer);
                     }
                 }
-
+                if (correctLabel == null)
+                {
+                    continue;
+                }
                 // Mark correct answer             if (correctLabel != null && answers.Count >= 1) 
                 var index = correctLabel[0] - 'A';
                 if (index >= 0 && index < answers.Count)
@@ -225,6 +276,7 @@ namespace cbtBackend.Services.Implementations
 
                 question.Answers = answers;
                 await _questionRepository.Create(question);
+                questions.Add(question);
 
             }
 

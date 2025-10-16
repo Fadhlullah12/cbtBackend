@@ -15,16 +15,19 @@ namespace cbtBackend.Repositories.Implementations
 
         public async Task<Student> Get(string id)
         {
-            var student = await _context.Set<Student>()
-            .Include(a => a.SubAdmin)
-            .Include(a => a.User)
-            .Include(a => a.Results)
-            .Include(a => a.StudentExams)
-            .Include(a => a.StudentSubjects)
+         var student = await _context.Set<Student>()
+        .Include(a => a.SubAdmin)
+        .Include(a => a.User)
+        .Include(a => a.Results)
+        .Include(a => a.StudentExams)
+        .Include(a => a.StudentSubjects)
             .ThenInclude(a => a.Subject)
-            .ThenInclude(a => a.Exams)
-            .FirstOrDefaultAsync(a => a.Id == id && a.IsDeleted == false);
-            return student!;
+                .ThenInclude(a => a.Exams)
+        .AsSplitQuery()
+        .FirstOrDefaultAsync(a => a.Id == id && a.IsDeleted == false);
+
+        return student!;
+
         }
 
         public async Task<Student> Get(Expression<Func<Student, bool>> expression)
@@ -37,23 +40,24 @@ namespace cbtBackend.Repositories.Implementations
             .Include(a => a.StudentSubjects)
             .ThenInclude(a => a.Subject)
             .ThenInclude(a => a.Exams)
+            .AsSplitQuery()
             .FirstOrDefaultAsync(expression);
             return student!;
         }
 
-        public async Task<ICollection<Student>> GetAll(string subAdminId)
+       public async Task<ICollection<Student>> GetAll(string subAdminId)
         {
-            var student = await _context.Set<Student>()
+            return await _context.Students
             .Include(a => a.SubAdmin)
             .Include(a => a.User)
             .Include(a => a.Results)
             .Include(a => a.StudentExams)
             .Include(a => a.StudentSubjects)
-            .Include(a => a.User)
-            .Where(a => a.IsDeleted == false && a.SubAdminId == subAdminId)
+            .Where(a => !a.IsDeleted && a.SubAdminId == subAdminId)
+            .AsSplitQuery()
             .ToListAsync();
-            return student!;
         }
+
 
         public async Task<ICollection<Student>> GetAll(Expression<Func<Student, bool>> expression)
         {
@@ -65,6 +69,7 @@ namespace cbtBackend.Repositories.Implementations
             .Include(a => a.StudentSubjects)
             .ThenInclude(a => a.Subject)
             .ThenInclude(a => a.Exams)
+            .AsSplitQuery()
             .Where(expression)
             .ToListAsync();
             return student!;

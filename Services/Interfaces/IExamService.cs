@@ -10,5 +10,7 @@ namespace cbtBackend.Services.Interfaces
         Task<BaseResponse<EndExamResponseModel>> EndExamAsync(string id);
         Task<BaseResponse<ICollection<LoadExamsDto>>> LoadAvailableExamAsync();
         Task<BaseResponse<SubmitExamDto>> SubmitExam(ExamSubmissionRequestModel model);
+        Task<BaseResponse<ICollection<ExamDto>>> GetOngoingExamsAsync();
+
     }
 }
