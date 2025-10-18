@@ -3,6 +3,7 @@ using cbtBackend.Repositories.Implementations;
 using cbtBackend.Repositories.Interfaces;
 using cbtBackend.Services.Implementations;
 using cbtBackend.Services.Interfaces;
+using cbtBackend.Services.MailService;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -16,7 +17,7 @@ builder.Services.AddDbContext<ApplicationContext>(opt =>
 
 builder.Services.AddCors(options =>
     {
-        options.AddPolicy("AllowSpecificOrigin",
+        options.AddPolicy("AllowAllOrigins",
             builder => builder.WithOrigins("http://127.0.0.1:5500")
                               .AllowAnyHeader()
                               .AllowAnyMethod());
@@ -25,8 +26,32 @@ builder.Services.AddControllers();
 
 //Add Repositories
 builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IAnswerRepository, AnswerRepository>();
+builder.Services.AddScoped<IExamRepository, ExamRepository>();
+builder.Services.AddScoped<IQuestionRepository, QuestionRepository>();
+builder.Services.AddScoped<IResultRepository, ResultRepository>();
+builder.Services.AddScoped<IStudentExamRepository, StudentExamRepository>();
+builder.Services.AddScoped<IStudentRepository, StudentRepository>();
+builder.Services.AddScoped<IStudentSubjectRepository, StudentSubjectRepository>();
+builder.Services.AddScoped<ISubAdminRepository, SubAdminRepository>();
+builder.Services.AddScoped<ISubjectRepository, SubjectRepository>();
+
+builder.Services.AddHttpContextAccessor();
 //Add Services
 builder.Services.AddScoped<ILoginService, LoginService>();
+builder.Services.AddScoped<IAnswerService, AnswerService>();
+builder.Services.AddScoped<IExamService, ExamService>();
+builder.Services.AddScoped<IQuestionService, QuestionService>();
+builder.Services.AddScoped<IResultService, ResultService>();
+builder.Services.AddScoped<IStudentService, StudentService>();
+builder.Services.AddScoped<ISubAdminService, SubAdminService>();
+builder.Services.AddScoped<ISubjectService, SubjectService>();
+builder.Services.AddScoped<IGetCurrentUser, GetCurrentUser>();
+builder.Services.AddScoped<IHomePageService, HomePageService>();
+builder.Services.AddScoped<IMailMessageService, MailMessageService>();
+builder.Services.AddScoped<TokenService>();
+
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -45,7 +70,7 @@ var summaries = new[]
 
 app.MapGet("/weatherforecast", () =>
 {
-    var forecast =  Enumerable.Range(1, 5).Select(index =>
+    var forecast = Enumerable.Range(1, 5).Select(index =>
         new WeatherForecast
         (
             DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
@@ -57,6 +82,7 @@ app.MapGet("/weatherforecast", () =>
 })
 .WithName("GetWeatherForecast")
 .WithOpenApi();
+app.UseStaticFiles();
 app.UseRouting();
 app.UseCors("AllowAllOrigins");
 app.UseAuthentication();

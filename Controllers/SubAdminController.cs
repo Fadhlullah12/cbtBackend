@@ -1,40 +1,64 @@
 using cbtBackend.Dtos.RequestModels;
 using cbtBackend.Dtos.ResponseModels;
 using cbtBackend.Services.Interfaces;
-using Microsoft.AspNetCore.Cors;
+using cbtBackend.Services.MailService;
 using Microsoft.AspNetCore.Mvc;
 
 namespace cbtBackend.Controllers
 {
     [ApiController]
-    [EnableCors("AllowSpecificOrigin")]
-    [Route("api/[controller]")]
+    [Route("/subadmins")]
 
     public class SubAdminController : ControllerBase
     {
         ISubAdminService _subAdminService;
-        public SubAdminController(ISubAdminService subAdminService)
+        IMailMessageService _mailService;
+        public SubAdminController(ISubAdminService subAdminService, IMailMessageService mailService)
         {
+            _mailService = mailService;
             _subAdminService = subAdminService;
         }
 
-        [HttpPost("Approve")]
+        [HttpPut("approve/{id}")]
         public async Task<IActionResult> ApproveSubAdmin(string id)
         {
             bool response = await _subAdminService.ApproveSubAdminAsync(id);
             return Ok(response);
         }
-        [HttpPost("Reject")]
+        [HttpPut("reject/{id}")]
         public async Task<IActionResult> RejectSubAdmin(string id)
         {
             bool response = await _subAdminService.RejectSubAdminAsync(id);
             return Ok(response);
         }
-         [HttpPost("Register")]
+        [HttpPost("register")]
         public async Task<ActionResult<BaseResponse<CreateSubAdminRequestModel>>> Login([FromBody] CreateSubAdminRequestModel model)
         {
             var response = await _subAdminService.CreateSubAdminAsync(model);
             return Ok(response);
+        }
+        [HttpGet]
+        public async Task<ActionResult<BaseResponse<SubAdminDto>>> GetAllSubAdmins()
+        {
+            var response = await _subAdminService.GetAllSubAdminsAsync();
+            return Ok(response);
+        }
+        [HttpGet("unapproved")]
+        public async Task<ActionResult<BaseResponse<SubAdminDto>>> GetUnApprovedSubAdmins()
+        {
+            var response = await _subAdminService.GetUnApprovedSubAdminsAsync();
+            return Ok(response);
+        }
+        [HttpPost("message")]
+        public async Task<ActionResult<BaseResponse<SubAdminDto>>> SendMessage(MessageDto message)
+        {
+            bool response = await _mailService.SendPlainMessage(message);
+            if (response == false)
+            {
+                return BadRequest();
+            }
+            return Ok();
+            
         }
     }
 }

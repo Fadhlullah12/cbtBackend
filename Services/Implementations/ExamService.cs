@@ -47,7 +47,15 @@ namespace cbtBackend.Services.Implementations
 
 
             var subAdmin = await _subAdminRepository.Get(a => a.UserId == userId);
-            var subject = await _subjectRepository.Get(a => a.SubAdminId == subAdmin.Id && a.SubjectName == model.SubjectName);
+            var subject = await _subjectRepository.Get(a => a.SubAdminId == subAdmin.Id && a.SubjectName == model.SubjectName && a.IsDeleted == false);
+             if (subject == null)
+            {
+                return new BaseResponse<CreateExamResponseModel>
+                {
+                    Message = $"The Subject {model.SubjectName} was not found",
+                    Status = false,
+                };
+            }
             var students = subject.StudentSubjects.FirstOrDefault(a => a.SubjectId == subject.Id);
             var questions = subject.Questions;
             var ongoingExam = subject.Exams.FirstOrDefault(a => a.Ongoing == true);
@@ -67,11 +75,28 @@ namespace cbtBackend.Services.Implementations
                     Status = false,
                 };
             }
+            
             if (questions.Count < model.MaxQuestion || questions.Count == 0)
             {
                 return new BaseResponse<CreateExamResponseModel>
                 {
                     Message = "Questions are not Enough to Start Exam",
+                    Status = false,
+                };
+            }
+            if (model.TimeScheduled < DateTime.Now)
+            {
+                return new BaseResponse<CreateExamResponseModel>
+                {
+                    Message = "Current time is ahead of TimeScheduled",
+                    Status = false,
+                };
+            }
+             if (model.DurationMinutes <= 0)
+            {
+                return new BaseResponse<CreateExamResponseModel>
+                {
+                    Message = "Invalid Time Input for Duration in Minutes",
                     Status = false,
                 };
             }
@@ -131,16 +156,16 @@ namespace cbtBackend.Services.Implementations
                     Student = student,
                     StudentId = student.Id
                 };
-                exam.Ongoing = false;
                 student.Results.Add(result);
                 student.StudentExams.Add(studentExams);
                 exam.StudentExams.Add(studentExams);
                 _examRepository.Update(exam);
                 await _resultRepository.Create(result);
                 await _studentExamRepository.Create(studentExams);
-                await _examRepository.Save();
             }
-            if (absentStudents != null)
+            exam.Ongoing = false;
+            await _examRepository.Save();
+            if (absentStudents.Count != 0)
             {
                 return new BaseResponse<EndExamResponseModel>
                 {
@@ -152,6 +177,7 @@ namespace cbtBackend.Services.Implementations
                     }
                 };
             }
+            
             return new BaseResponse<EndExamResponseModel>
             {
                 Message = "Exam Ended",
@@ -166,10 +192,29 @@ namespace cbtBackend.Services.Implementations
             var availableExams = student.StudentSubjects.SelectMany(a => a.Subject.Exams).Where(a => a.Ongoing == true).ToList();
             var exams = availableExams.Select(a => new LoadExamsDto
             {
+                Title = a.Title,
+                NoOfQuestions = a.MaxQuestion,
                 ExamId = a.Id,
                 SubjectName = a.Subject.SubjectName,
             }).ToList();
             return new BaseResponse<ICollection<LoadExamsDto>>
+            {
+                Status = true,
+                Data = exams
+            };
+        }
+
+         public async Task<BaseResponse<ICollection<ExamDto>>> Ongoing()
+        {
+            var userId = _getCurrentUser.GetCurrentUserId();
+            var subAdmin = await _subAdminRepository.Get(a => a.UserId == userId);
+            var exams = subAdmin.Exams.Where(a => a.Ongoing == true).Select(a => new ExamDto
+            {
+                Id = a.Id,
+                SubjectName = a.Subject.SubjectName,
+                Title = a.Title,
+            }).ToList();
+            return new BaseResponse<ICollection<ExamDto>>
             {
                 Status = true,
                 Data = exams
@@ -192,6 +237,7 @@ namespace cbtBackend.Services.Implementations
             {
                 Id = b.Id,
                 Ongoing = b.Ongoing,
+                Title = b.Title,
                 DateCreated = b.DateCreated,
                 SubjectName = b.Subject.SubjectName,
                 Students = [.. b.StudentExams.Select(a => new StudentDto

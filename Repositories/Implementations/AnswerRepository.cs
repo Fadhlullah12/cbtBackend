@@ -2,6 +2,7 @@ using System.Linq.Expressions;
 using cbtBackend.Context;
 using cbtBackend.Model.Entities;
 using cbtBackend.Repositories.Interfaces;
+using Microsoft.EntityFrameworkCore;
 
 namespace cbtBackend.Repositories.Implementations
 {
@@ -12,9 +13,13 @@ namespace cbtBackend.Repositories.Implementations
             _context = context;
         }
 
-        public Task<Answer> Get(string id)
+        public async Task<Answer> Get(string id)
         {
-            throw new NotImplementedException();
+            var answer = await _context.Set<Answer>()
+           .Include(a => a.Question)
+           .ThenInclude(a => a.Answers)
+           .FirstOrDefaultAsync(a => a.Id == id && a.IsDeleted == false);
+            return answer!;
         }
 
         public Task<Answer> Get(Expression<Func<Answer, bool>> expression)
@@ -27,9 +32,13 @@ namespace cbtBackend.Repositories.Implementations
             throw new NotImplementedException();
         }
 
-        public Task<ICollection<Answer>> GetAll(Expression<Func<Answer, bool>> expression)
+        public async Task<ICollection<Answer>> GetAll(Expression<Func<Answer, bool>> expression)
         {
-            throw new NotImplementedException();
+            var answer = await _context.Set<Answer>()
+           .Include(a => a.Question)
+           .Where(expression)
+           .ToListAsync();
+            return answer!;
         }
     }
 }

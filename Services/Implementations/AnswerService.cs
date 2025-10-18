@@ -28,10 +28,26 @@ namespace cbtBackend.Services.Implementations
             return true;
         }
 
+        public async Task<BaseResponse<ICollection<AnswerDto>>> GetAnswers(string Id)
+        {
+            var answers = await _answerRepository.GetAll(a => a.QuestionId == Id);
+            var listOfAnswers = answers.Select(a => new AnswerDto
+            {
+                Id = a.Id,
+                Label = a.Label,
+               IsCorrect = a.IsCorrect,
+            }).ToList();
+            return new BaseResponse<ICollection<AnswerDto>>
+            {
+                Status = true,
+                Data = listOfAnswers
+            };
+        }
+
         public async Task<bool> Update(UpdateAnswerRequestModel model)
         {
             var answer = await _answerRepository.Get(model.AnswerId);
-            var question = await _questionRepository.Get(answer.QuestionId);
+            var question = answer.Question;
             if (model.IsCorrect == true)
             {
                 var correctAnswer = question.Answers.FirstOrDefault(a => a.IsCorrect == true);

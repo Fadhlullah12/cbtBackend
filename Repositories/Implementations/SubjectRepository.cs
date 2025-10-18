@@ -19,6 +19,7 @@ namespace cbtBackend.Repositories.Implementations
             .Include(a => a.SubAdmin)
            .Include(a => a.Exams)
            .Include(a => a.Questions)
+           .ThenInclude(a => a.Answers)
            .Include(a => a.StudentSubjects)
             .FirstOrDefaultAsync(a => a.Id == id && a.IsDeleted == false);
             return subject!;
@@ -37,14 +38,14 @@ namespace cbtBackend.Repositories.Implementations
 
         public async Task<ICollection<Subject>> GetAll(Expression<Func<Subject, bool>> predicate)
         {
-            var sales = await _context.Set<Subject>()
+            var subjects = await _context.Set<Subject>()
            .Include(a => a.SubAdmin)
            .Include(a => a.Exams)
            .Include(a => a.Questions)
            .Include(a => a.StudentSubjects)
             .Where(predicate)
             .ToListAsync();
-            return sales!; 
+            return subjects!; 
         }
     }
 }

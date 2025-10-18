@@ -20,18 +20,29 @@ namespace cbtBackend.Controllers
             var response = await _resultService.GetStudentResultAsync(studentId);
             if (response.Status == false)
             {
-                return BadRequest(response.Message);
+                return BadRequest(response);
             }
             return Ok(response);
         }
-        
+
         [HttpGet("subject/{subjectId}")]
-        public async Task<ActionResult< BaseResponse<ICollection<ResultDto>>>> GetSubjectResult(string subjectId)
+        public async Task<ActionResult<BaseResponse<ICollection<ResultDto>>>> GetSubjectResult(string subjectId)
         {
             var response = await _resultService.GetSubjectResultAsync(subjectId);
             if (response.Status == false)
             {
-                return BadRequest(response.Message);
+                return BadRequest(response);
+            }
+            return Ok(response);
+        }
+        
+        [HttpGet("exam/{examId}")]
+        public async Task<ActionResult< BaseResponse<ICollection<ResultDto>>>> GetExamResult(string examId)
+        {
+            var response = await _resultService.GetExamResultAsync(examId);
+            if (response.Status == false)
+            {
+                return BadRequest(response);
             }
             return Ok(response);
         }

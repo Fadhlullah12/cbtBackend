@@ -51,5 +51,25 @@ namespace cbtBackend.Services.Implementations
                 Data = listOfResults
             };
         }
+
+        public async Task<BaseResponse<ICollection<ResultDto>>> GetExamResultAsync(string examId)
+        {
+             var results = await _resultRepository.GetAll(a => a.ExamId == examId);
+
+            var listOfResults = results.Select(a => new ResultDto
+            {
+                Score = a.Score,
+                SubjectName = a.Subject.SubjectName,
+                NoOfQuestions = a.Exam.MaxQuestion,
+                StudentName = $"{a.Student.User.FirstName} {a.Student.User.LastName}",
+                DateCreated = a.DateCreated
+            }).ToList();
+            return new BaseResponse<ICollection<ResultDto>>()
+            {
+                Message = "Success",
+                Status = true,
+                Data = listOfResults
+            };
+        }
     }
 }

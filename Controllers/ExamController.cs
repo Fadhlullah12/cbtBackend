@@ -16,14 +16,14 @@ namespace cbtBackend.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<BaseResponse<CreateExamResponseModel>>> CreateExam(CreateExamRequestModel model)
+        public async Task<ActionResult<BaseResponse<CreateExamResponseModel>>> CreateExam([FromForm]CreateExamRequestModel model)
         {
             var response = await _examService.StartExamAsync(model);
             if (response.Status == false)
             {
-                return BadRequest(response.Message);
+                return BadRequest(response);
             }
-            return Ok(response.Message);
+            return Ok(response);
         }
         [HttpPost("end")]
         public async Task<ActionResult<BaseResponse<EndExamResponseModel>>> EndExam(string Id)
@@ -31,9 +31,9 @@ namespace cbtBackend.Controllers
             var response = await _examService.EndExamAsync(Id);
             if (response.Status == false)
             {
-                return BadRequest(response.Message);
+                return BadRequest(response);
             }
-            return Ok(response.Message );
+            return Ok(response);
         }
 
         [HttpGet("load")]
@@ -42,21 +42,32 @@ namespace cbtBackend.Controllers
             var response = await _examService.LoadAvailableExamAsync();
             if (response.Status == false)
             {
-                return BadRequest(response.Message);
+                return BadRequest(response);
             }
             return Ok(response);
         }
-        
-         [HttpPost("submit")]
+
+        [HttpPost("submit")]
         public async Task<ActionResult<BaseResponse<SubmitExamDto>>> ExamResult(ExamSubmissionRequestModel model)
         {
             var response = await _examService.SubmitExam(model);
             return Ok(response);
         }
-           [HttpGet]
+        [HttpGet]
         public async Task<ActionResult<BaseResponse<ICollection<ExamDto>>>> GetExam()
         {
             var response = await _examService.GetAllExamsAsync();
+            if (response.Status == false)
+            {
+                return BadRequest();
+            }
+            return Ok(response);
+        }
+        
+         [HttpGet ("ongoing")]
+        public async Task<ActionResult<BaseResponse<ICollection<ExamDto>>>> Ongoing()
+        {
+            var response = await _examService.Ongoing();
             if (response.Status == false)
             {
                 return BadRequest();

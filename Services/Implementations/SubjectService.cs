@@ -95,10 +95,11 @@ namespace cbtBackend.Services.Implementations
                     Status = false,
                 };
             }
-            var subjects = await _subjectRepository.GetAll(a => a.SubAdmin.UserId == userId);
+            var subjects = await _subjectRepository.GetAll(a => a.SubAdmin.UserId == userId && a.IsDeleted == false);
 
             var listOfSubjects = subjects.Select(a => new SubjectDto
             {
+                Id = a.Id,
                 SubjectName = a.SubjectName,
                 SubjectExams = a.Exams.Count,
                 SubjectStudents = a.StudentSubjects.Count
@@ -114,7 +115,7 @@ namespace cbtBackend.Services.Implementations
 
         public async Task<BaseResponse<ICollection<StudentDto>>> ViewAllSubjectStudentAsync(string subjectId)
         {
-            var studentSubjects = await _studentSubjectRepository.GetSubjectsAsync(subjectId);
+            var studentSubjects = await _studentSubjectRepository.GetStudentsAsync(subjectId);
             var listOfStudents = studentSubjects.Select(a => new StudentDto
             {
                 FullName = $"{a.Student.User.FirstName} {a.Student.User.LastName}",

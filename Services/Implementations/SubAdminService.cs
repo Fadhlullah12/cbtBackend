@@ -4,6 +4,7 @@ using cbtBackend.Model;
 using cbtBackend.Model.Enums;
 using cbtBackend.Repositories.Interfaces;
 using cbtBackend.Services.Interfaces;
+using cbtBackend.Services.MailService;
 
 namespace cbtBackend.Services.Implementations
 {
@@ -11,8 +12,10 @@ namespace cbtBackend.Services.Implementations
     {
         ISubAdminRepository _subAdminRepository;
         IUserRepository _userRepository;
-        public SubAdminService(IUserRepository userRepository, ISubAdminRepository subAdminRepository)
+        IMailMessageService _mailMessageService;
+        public SubAdminService(IUserRepository userRepository, ISubAdminRepository subAdminRepository,IMailMessageService mailMessageService)
         {
+            _mailMessageService = mailMessageService;
             _userRepository = userRepository;
             _subAdminRepository = subAdminRepository;
         }
@@ -26,10 +29,12 @@ namespace cbtBackend.Services.Implementations
                 return false;
             }
             subAdmin.ApprovalStatus = ApprovalStatus.Approved;
+            await _mailMessageService.SendAprovalMessage($"{subAdmin.User.FirstName} {subAdmin.User.FirstName}", subAdmin.User.Email, true);
+            await _subAdminRepository.Save();
             return true;
-         
+
         }
-          public async Task<bool> RejectSubAdminAsync(string id)
+        public async Task<bool> RejectSubAdminAsync(string id)
         {
 
             var subAdmin = await _subAdminRepository.Get(a => a.Id == id);
@@ -38,7 +43,9 @@ namespace cbtBackend.Services.Implementations
                 return false;
             }
             subAdmin.ApprovalStatus = ApprovalStatus.Rejected;
-            return true;      
+            await _mailMessageService.SendAprovalMessage($"{subAdmin.User.FirstName} {subAdmin.User.FirstName}", subAdmin.User.Email, false);
+            await _subAdminRepository.Save();
+            return true;
         }
 
         public async Task<BaseResponse<CreateSubAdminResponseModel>> CreateSubAdminAsync(CreateSubAdminRequestModel model)
@@ -80,6 +87,40 @@ namespace cbtBackend.Services.Implementations
                     Email = user.Email,
                     UserName = $"{user.FirstName} {user.LastName}"
                 }
+            };
+        }
+        public async Task<BaseResponse<ICollection<SubAdminDto>>> GetAllSubAdminsAsync()
+        {
+
+            var allSubAdmins = await _subAdminRepository.GetAll();
+            var subAdmins = allSubAdmins.Select(a => new SubAdminDto
+            {
+                Id = a.Id,
+                Email = a.User.Email,
+                FullName = $"{a.User.FirstName} {a.User.LastName}",
+                RegisterationDate = a.DateCreated.Date.ToString()
+            }).ToList();
+            return new BaseResponse<ICollection<SubAdminDto>>
+            {
+                Status = true,
+                Data = subAdmins
+            };
+        }
+        public async Task<BaseResponse<ICollection<SubAdminDto>>> GetUnApprovedSubAdminsAsync()
+        {
+
+            var allSubAdmins = await _subAdminRepository.GetUnApproved();
+            var subAdmins = allSubAdmins.Select(a => new SubAdminDto
+            {
+                Id = a.Id,
+                Email = a.User.Email,
+                FullName = $"{a.User.FirstName} {a.User.LastName}",
+                RegisterationDate = a.DateCreated.Date.ToString()
+            }).ToList();
+            return new BaseResponse<ICollection<SubAdminDto>>
+            {
+                Status = true,
+                Data = subAdmins
             };
         }
     }

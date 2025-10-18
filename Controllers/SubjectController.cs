@@ -35,7 +35,7 @@ namespace cbtBackend.Controllers
             }
             return Ok(response);
         }
-        [HttpGet("students")]
+        [HttpGet("students/{Id}")]
         public async Task<ActionResult<BaseResponse<ICollection<StudentDto>>>> GetSubjectStudents(string Id)
         {
             var response = await _subjectService.ViewAllSubjectStudentAsync(Id);
@@ -56,7 +56,7 @@ namespace cbtBackend.Controllers
             return Ok(response);
         }
 
-        [HttpDelete("${Id}")]
+        [HttpDelete("{Id}")]
         public async Task<ActionResult<bool>> Delete(string Id)
         {
             var response = await _subjectService.Delete(Id);

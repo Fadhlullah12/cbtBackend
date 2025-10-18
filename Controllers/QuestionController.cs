@@ -21,18 +21,18 @@ namespace cbtBackend.Controllers
             var response = await _questionService.LoadExamQuestions(examId);
             if (response.Status == false)
             {
-                return BadRequest(response.Message);
+                return BadRequest(response);
             }
             return Ok(response);
         }
 
-        [HttpGet("subject{subjectId}")]
+        [HttpGet("subject/{subjectId}")]
         public async Task<ActionResult<BaseResponse<BaseResponse<ICollection<QuestionDto>>>>> GetSubjectQuestions(string subjectId)
         {
             var response = await _questionService.GetSubjectQuestions(subjectId);
             if (response.Status == false)
             {
-                return BadRequest(response.Message);
+                return BadRequest(response);
             }
             return Ok(response);
         }

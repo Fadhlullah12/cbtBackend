@@ -7,6 +7,7 @@ namespace cbtBackend.Services.Interfaces
     {
         Task<BaseResponse<ICollection<ResultDto>>> GetStudentResultAsync(string studentId);
         Task<BaseResponse<ICollection<ResultDto>>> GetSubjectResultAsync(string subjectId);
-        
+        Task<BaseResponse<ICollection<ResultDto>>> GetExamResultAsync(string examId);
+
     }
 }

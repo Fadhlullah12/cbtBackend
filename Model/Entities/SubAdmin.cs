@@ -7,8 +7,8 @@ namespace cbtBackend.Model
         public User User { get; set; } = default!;
         public string UserId { get; set; } = default!;
         public ApprovalStatus ApprovalStatus { get; set; } = ApprovalStatus.Pending;
-        public ICollection<Student> Students = [];
-        public ICollection<Subject> Subjects = [];
-        public ICollection<Exam> Exams = [];
+        public ICollection<Student> Students { get; set; } = [];
+        public ICollection<Subject> Subjects { get; set; } = [];
+        public ICollection<Exam> Exams { get; set; } = [];
     }
 }

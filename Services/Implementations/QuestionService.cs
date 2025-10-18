@@ -46,6 +46,7 @@ namespace cbtBackend.Services.Implementations
             var subject = await _subjectRepository.Get(subjectId);
             var subjectQuestions = subject.Questions.Select(s => new QuestionDto
             {
+                Id = s.Id,
                 Label = s.Text,
                 Answers = s.Answers.Select(a => a.Label).ToList()
             }).ToList();

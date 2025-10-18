@@ -9,7 +9,6 @@ namespace cbtBackend.Repositories.Implementations
 {
     public class SubAdminRepository : BaseRepository<SubAdmin>, ISubAdminRepository
     {
-        ApplicationContext _context;
         public SubAdminRepository(ApplicationContext context)
         {
             _context = context;
@@ -35,10 +34,17 @@ namespace cbtBackend.Repositories.Implementations
 
         public async Task<SubAdmin> Get(Expression<Func<SubAdmin, bool>> expression)
         {
-            var subAdmin = await _context.Set<SubAdmin>()
-           .Include(a => a.Students)
-           .Include(a => a.User)
-           .FirstOrDefaultAsync(expression);
+             var subAdmin = await _context.Set<SubAdmin>()
+            .Include(a => a.User)
+            .Include(a => a.Subjects)
+            .ThenInclude(a => a.Results)
+            .Include(a => a.Exams)
+            .ThenInclude(a => a.Subject)
+            .Include(a => a.Students)
+            .ThenInclude(a => a.User)
+            .Include(a => a.Students)
+            .ThenInclude(a => a.StudentSubjects)
+            .FirstOrDefaultAsync(expression);
             return subAdmin!;
         }
 
@@ -47,6 +53,7 @@ namespace cbtBackend.Repositories.Implementations
              var subAdmin = await _context.Set<SubAdmin>()
             .Include(a => a.Students)
             .Include(a => a.User)
+            .Where(a => a.ApprovalStatus == ApprovalStatus.Approved)
             .ToListAsync();
             return subAdmin!;
         }

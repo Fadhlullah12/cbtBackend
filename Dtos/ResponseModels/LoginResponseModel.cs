@@ -6,6 +6,6 @@ namespace cbtBackend.Dtos.ResponseModels
         public string Role { get; set; } = default!;
         public string UserName { get; set; } = default!;
         public string Email { get; set; } = default!;
-
+        public string Id { get; set; } = default!;
     }
 }

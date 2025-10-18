@@ -13,8 +13,8 @@ namespace cbtBackend.Model
         public string SubAdminId { get; set; } = default!;
         public Subject Subject { get; set; } = default!;
         public string SubjectId { get; set; } = default!;
-        public ICollection<Result> Results = [];
-        public ICollection<StudentExam> StudentExams = [];
+        public ICollection<Result> Results { get; set; } = [];
+        public ICollection<StudentExam> StudentExams { get; set; } = [];
     }
     
 }

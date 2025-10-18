@@ -6,6 +6,7 @@ namespace cbtBackend.Services.Interfaces
     public interface IExamService
     {
         Task<BaseResponse<CreateExamResponseModel>> StartExamAsync(CreateExamRequestModel model);
+        Task<BaseResponse<ICollection<ExamDto>>> Ongoing();
         Task<BaseResponse<ICollection<ExamDto>>> GetAllExamsAsync();
         Task<BaseResponse<EndExamResponseModel>> EndExamAsync(string id);
         Task<BaseResponse<ICollection<LoadExamsDto>>> LoadAvailableExamAsync();

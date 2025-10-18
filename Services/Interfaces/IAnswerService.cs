@@ -1,4 +1,5 @@
 using cbtBackend.Dtos.RequestModels.UpdateRequstModels;
+using cbtBackend.Dtos.ResponseModels;
 
 namespace cbtBackend.Services.Interfaces
 {
@@ -6,6 +7,7 @@ namespace cbtBackend.Services.Interfaces
     {
         public Task<bool> Delete(string answerId);
         public Task<bool> Update(UpdateAnswerRequestModel model);
+        public Task<BaseResponse<ICollection<AnswerDto>>> GetAnswers(string Id);
 
     }
 }

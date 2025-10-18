@@ -9,8 +9,8 @@ namespace cbtBackend.Model
         public string SerialNumber { get; set; } = default!;
         public SubAdmin SubAdmin { get; set; } = default!;
         public string SubAdminId { get; set; } = default!;
-        public ICollection<StudentSubject> StudentSubjects = [];
-        public ICollection<Result> Results = [];
-        public ICollection<StudentExam> StudentExams = [];
+        public ICollection<StudentSubject> StudentSubjects { get; set; } = [];
+        public ICollection<Result> Results { get; set; } = [];
+        public ICollection<StudentExam> StudentExams { get; set; } = [];
     }
 }

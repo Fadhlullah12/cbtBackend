@@ -47,8 +47,9 @@ namespace cbtBackend.Repositories.Implementations
             var exam = await _context.Set<Exam>()
            .Include(a => a.Subject)
            .ThenInclude(a => a.StudentSubjects)
+           .Include(a => a.StudentExams)
            .ThenInclude(a => a.Student)
-           .ThenInclude(a => a.StudentExams)
+           .ThenInclude(a => a.User)
            .Include(a => a.SubAdmin)
            .Where(expression)
            .ToListAsync();

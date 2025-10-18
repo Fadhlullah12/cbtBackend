@@ -11,8 +11,7 @@ using Microsoft.IdentityModel.Tokens;
 namespace cbtBackend.Controllers
 {
     [ApiController]
-    [EnableCors("AllowSpecificOrigin")]
-    [Route("api/[controller]")]
+    [Route("/users")]
     public class UserController : ControllerBase
     {
         ILoginService _loginService;
@@ -33,16 +32,17 @@ namespace cbtBackend.Controllers
             {
                 new Claim(ClaimTypes.Role, userCreds.Data!.Role),
                 new Claim(ClaimTypes.Name, userCreds.Data.UserName),
-                new Claim(ClaimTypes.Email, userCreds.Data.Email)
+                new Claim(ClaimTypes.Email, userCreds.Data.Email),
+                new Claim(ClaimTypes.NameIdentifier, userCreds.Data.Id)
             };
             string token = GenerateToken(claims);
             return Ok(new { Token = token });
         }
-       [HttpGet("Logout")]
-        public async Task<IActionResult> Logout()
-        {
-            return Ok("Logout successful");
-        }
+    //    [HttpGet("Logout")]
+    //     public async Task<IActionResult> Logout()
+    //     {
+    //         return Ok("Logout successful");
+    //     }
 
         private string GenerateToken(IEnumerable<Claim> claims)
         {
