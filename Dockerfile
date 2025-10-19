@@ -8,8 +8,8 @@ FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 
 # Copy only the project file and restore dependencies
-COPY ["cbtBackend/csbBackend.csproj", "cbtBackend/"]
-RUN dotnet restore "csbBackend/csbBackend.csproj"
+COPY ["cbtBackend.csproj", "."]
+RUN dotnet restore "cbtBackend/cbtBackend.csproj"
 
 # Copy the rest of the source code
 COPY . .
