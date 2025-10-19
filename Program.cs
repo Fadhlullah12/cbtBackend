@@ -16,12 +16,13 @@ builder.Services.AddDbContext<ApplicationContext>(opt =>
    opt.UseMySQL(builder.Configuration.GetConnectionString("ConnectionString")!));
 
 builder.Services.AddCors(options =>
-    {
-        options.AddPolicy("AllowAllOrigins",
-            builder => builder.WithOrigins("http://127.0.0.1:5500")
-                              .AllowAnyHeader()
-                              .AllowAnyMethod());
-    });
+{
+    options.AddPolicy("AllowAllOrigins",
+        builder => builder.AllowAnyOrigin()
+                          .AllowAnyHeader()
+                          .AllowAnyMethod());
+});
+
 builder.Services.AddControllers();
 
 //Add Repositories
@@ -61,8 +62,6 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
-
 var summaries = new[]
 {
     "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
@@ -87,11 +86,7 @@ app.UseRouting();
 app.UseCors("AllowAllOrigins");
 app.UseAuthentication();
 app.UseAuthorization();
-app.UseHttpsRedirection();
-    app.UseEndpoints(endpoints =>
-    {
-        _ = endpoints.MapControllers();
-    });
+app.MapControllers();
 app.Run();
 
 record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)

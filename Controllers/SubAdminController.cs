@@ -18,6 +18,8 @@ namespace cbtBackend.Controllers
             _mailService = mailService;
             _subAdminService = subAdminService;
         }
+         [HttpGet("ping")]
+         public IActionResult Ping() => Ok("SubAdmin is alive");
 
         [HttpPut("approve/{id}")]
         public async Task<IActionResult> ApproveSubAdmin(string id)
@@ -60,7 +62,5 @@ namespace cbtBackend.Controllers
             return Ok();
 
         }
-         [HttpGet("ping")]
-         public IActionResult Ping() => Ok("SubAdmin is alive");
     }
 }
