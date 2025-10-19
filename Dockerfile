@@ -1,26 +1,21 @@
-# Stage 1: Base image for runtime
+# Stage 1: Runtime base
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
 WORKDIR /app
-EXPOSE 80
+EXPOSE 10000
 
-# Stage 2: Build image with SDK
+# Stage 2: Build
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
-
-# Copy only the project file and restore dependencies
 COPY ["cbtBackend.csproj", "."]
-RUN dotnet restore "cbtBackend/cbtBackend.csproj"
-
-# Copy the rest of the source code
+RUN dotnet restore "cbtBackend.csproj"
 COPY . .
-WORKDIR "/src/cbtBackend"
 RUN dotnet build "cbtBackend.csproj" -c Release -o /app/build
 
-# Stage 3: Publish the app
+# Stage 3: Publish
 FROM build AS publish
 RUN dotnet publish "cbtBackend.csproj" -c Release -o /app/publish
 
-# Stage 4: Final runtime image
+# Stage 4: Final image
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
