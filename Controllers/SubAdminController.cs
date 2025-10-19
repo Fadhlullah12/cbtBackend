@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace cbtBackend.Controllers
 {
     [ApiController]
-    [Route("/subadmins")]
+    [Route("subadmins")]
 
     public class SubAdminController : ControllerBase
     {
@@ -58,7 +58,9 @@ namespace cbtBackend.Controllers
                 return BadRequest();
             }
             return Ok();
-            
+
         }
+         [HttpGet("ping")]
+         public IActionResult Ping() => Ok("SubAdmin is alive");
     }
 }
