@@ -20,7 +20,7 @@ namespace cbtBackend.Context
                 new User
                 {
                     Id = "AMIN",
-                    Password = "Amin@@77",
+                    Password = BCrypt.Net.BCrypt.HashPassword("Amin@@77"),
                     Email = "AminOmoyele@gmail.com",
                     IsDeleted = false,
                     Role = "Administrator",
