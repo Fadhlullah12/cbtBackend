@@ -5,13 +5,12 @@ using System.Text;
 using cbtBackend.Dtos.RequestModels;
 using cbtBackend.Dtos.ResponseModels;
 using cbtBackend.Services.Interfaces;
-using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 namespace cbtBackend.Controllers
 {
     [ApiController]
-    [Route("/users")]
+    [Route("users")]
     public class UserController : ControllerBase
     {
         ILoginService _loginService;

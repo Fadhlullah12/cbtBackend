@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace cbtBackend.Controllers
 {
     [ApiController]
-    [Route("/answers")]
+    [Route("answers")]
     public class AnswerController : ControllerBase
     {
         IAnswerService _answerService;

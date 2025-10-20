@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace cbtBackend.Controllers
 {
     [ApiController]
-    [Route("/exams")]
+    [Route("exams")]
     public class ExamController : ControllerBase
     {
         IExamService _examService;

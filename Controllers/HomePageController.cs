@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace cbtBackend.Controllers
 {
     [ApiController]
-    [Route("/homepage")]
+    [Route("homepage")]
     public class HomePageController : ControllerBase
     {
         IHomePageService _homePageService;

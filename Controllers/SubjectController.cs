@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace cbtBackend.Controllers
 {
     [ApiController]
-    [Route("/subjects")]
+    [Route("subjects")]
     public class SubjectController : ControllerBase
     {
         ISubjectService _subjectService;

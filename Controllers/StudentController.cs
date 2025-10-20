@@ -2,13 +2,12 @@ using cbtBackend.Dtos.RequestModels;
 using cbtBackend.Dtos.ResponseModels;
 using cbtBackend.Services.Interfaces;
 using cbtBackend.Services.MailService;
-using MailKit;
 using Microsoft.AspNetCore.Mvc;
 
 namespace cbtBackend.Controllers
 {
     [ApiController]
-    [Route("/students")]
+    [Route("students")]
     public class StudentController : ControllerBase
     {
         IStudentService _studentService;

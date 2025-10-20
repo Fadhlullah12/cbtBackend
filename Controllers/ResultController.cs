@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace cbtBackend.Controllers
 {
     [ApiController]
-    [Route("/results")]
+    [Route("results")]
     public class ResultController : ControllerBase
     {
         IResultService _resultService;
